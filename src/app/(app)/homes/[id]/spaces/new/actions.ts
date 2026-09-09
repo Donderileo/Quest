@@ -5,7 +5,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 
 const spaceSchema = z.object({
-  homeId: z.string().uuid(),
+  homeId: z.string().min(1),
   name: z.string().min(1, "Nome obrigatório").max(60),
   icon: z.string().optional(),
   mode: z.enum(["simple", "gamified"]).default("simple"),
@@ -22,6 +22,10 @@ export async function createSpace(_prev: unknown, formData: FormData) {
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const { data, error } = await supabase
     .from("spaces")
     .insert({
@@ -34,5 +38,11 @@ export async function createSpace(_prev: unknown, formData: FormData) {
     .single();
 
   if (error) return { error: error.message };
+
+  // adiciona o criador como membro do ambiente
+  if (user) {
+    await supabase.from("space_members").insert({ space_id: data.id, user_id: user.id });
+  }
+
   redirect(`/spaces/${data.id}`);
 }

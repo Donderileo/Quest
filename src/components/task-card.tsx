@@ -1,19 +1,9 @@
 "use client";
 
 import { useTransition } from "react";
-import { CheckCircle2, Circle } from "lucide-react";
-import { format, isToday, isTomorrow, parseISO } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Avatar } from "./ui/avatar";
 import { completeOccurrence } from "@/app/(app)/spaces/[id]/actions";
-
-function formatDueDate(dateStr: string): string {
-  const d = parseISO(dateStr);
-  if (isToday(d)) return "Hoje";
-  if (isTomorrow(d)) return "Amanhã";
-  return format(d, "EEE, d MMM", { locale: ptBR });
-}
 
 type Occurrence = {
   id: string;
@@ -21,8 +11,6 @@ type Occurrence = {
   status: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tasks: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  profiles: any;
 };
 
 export function TaskCard({
@@ -34,8 +22,8 @@ export function TaskCard({
 }) {
   const [pending, startTransition] = useTransition();
   const done = occurrence.status === "done";
-  const task = occurrence.tasks as { title: string; points: number };
-  const profile = occurrence.profiles as { name: string; avatar_url: string | null } | null;
+  const task = occurrence.tasks as { title: string; points: number; spaces?: { name?: string } };
+  const spaceName = task?.spaces?.name;
 
   function handleComplete() {
     if (done) return;
@@ -43,36 +31,34 @@ export function TaskCard({
   }
 
   return (
-    <li
-      className={cn(
-        "flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-opacity",
-        done && "opacity-50",
-      )}
-    >
+    <div className="flex items-center gap-3 rounded-[15px] bg-card p-[14px] shadow-[0_2px_7px_-3px_rgba(40,45,40,.07)]">
       <button
         onClick={handleComplete}
         disabled={done || pending}
         aria-label={done ? "Concluído" : "Marcar como feito"}
-        className="shrink-0 text-primary disabled:text-muted-foreground"
-      >
-        {done ? (
-          <CheckCircle2 className="size-6" />
-        ) : (
-          <Circle className="size-6" />
+        className={cn(
+          "flex size-[25px] shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+          done ? "border-primary bg-primary text-white" : "border-[#d6dad4]",
         )}
+      >
+        {done && <Check className="size-3.5" strokeWidth={3} />}
       </button>
 
-      <div className="flex-1 min-w-0">
-        <p className={cn("font-medium truncate", done && "line-through")}>{task.title}</p>
-        <p className="text-xs text-muted-foreground">{formatDueDate(occurrence.due_date)}</p>
+      <div className="min-w-0 flex-1">
+        <p className={cn("truncate font-bold tracking-tight", done && "text-[#b4b8b2] line-through")}>
+          {task.title}
+        </p>
+        {spaceName && (
+          <div className="mt-0.5 flex items-center gap-1.5">
+            <span className="inline-block size-1.5 rounded-full bg-primary" />
+            <span className="text-xs font-semibold text-muted-foreground">{spaceName}</span>
+          </div>
+        )}
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
-        {gamified && task.points > 0 && !done && (
-          <span className="text-xs font-semibold text-gold">+{task.points}pts</span>
-        )}
-        {profile && <Avatar name={profile.name} src={profile.avatar_url} size="sm" />}
-      </div>
-    </li>
+      {gamified && task.points > 0 && !done && (
+        <span className="shrink-0 text-xs font-bold text-gold">+{task.points}</span>
+      )}
+    </div>
   );
 }

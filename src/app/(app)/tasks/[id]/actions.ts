@@ -3,72 +3,65 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { generateOccurrencesForTask } from "@/lib/occurrences";
 
 const taskSchema = z.object({
+  taskId: z.string().min(1),
   spaceId: z.string().min(1),
   title: z.string().min(1, "Título obrigatório").max(100),
-  description: z.string().optional(),
   recurrenceType: z.enum(["daily", "weekly", "custom"]),
-  recurrenceDays: z.array(z.number()).optional(),
   recurrenceIntervalDays: z.coerce.number().int().positive().optional(),
   assignmentType: z.enum(["fixed", "rotation"]),
   assigneeId: z.string().min(1).optional(),
   points: z.coerce.number().int().min(0).default(0),
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).default(() => new Date().toISOString().slice(0, 10)),
 });
 
-export async function createTask(_prev: unknown, formData: FormData) {
-  const recurrenceDaysRaw = formData.getAll("recurrenceDays").map(Number);
+export async function updateTask(_prev: unknown, formData: FormData) {
+  const recurrenceDays = formData.getAll("recurrenceDays").map(Number);
 
   const parsed = taskSchema.safeParse({
+    taskId: formData.get("taskId"),
     spaceId: formData.get("spaceId"),
     title: formData.get("title"),
-    description: formData.get("description") ?? undefined,
     recurrenceType: formData.get("recurrenceType"),
-    recurrenceDays: recurrenceDaysRaw,
     recurrenceIntervalDays: formData.get("recurrenceIntervalDays") || undefined,
     assignmentType: formData.get("assignmentType"),
     assigneeId: formData.get("assigneeId") || undefined,
     points: formData.get("points") || 0,
-    startDate: formData.get("startDate") ?? undefined,
   });
-
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  const { data, error } = await supabase
+  // O .select() devolve a linha só se o RLS permitiu (owner/admin da casa).
+  // Sem isso, um update bloqueado pelo RLS retorna 0 linhas SEM erro e o
+  // código seguiria usando o service client num taskId de outra casa.
+  const { data: updated, error } = await supabase
     .from("tasks")
-    .insert({
-      space_id: parsed.data.spaceId,
+    .update({
       title: parsed.data.title,
-      description: parsed.data.description ?? null,
       recurrence_type: parsed.data.recurrenceType,
-      recurrence_days: recurrenceDaysRaw,
+      recurrence_days: recurrenceDays,
       recurrence_interval_days: parsed.data.recurrenceIntervalDays ?? null,
       assignment_type: parsed.data.assignmentType,
       assignee_id: parsed.data.assignmentType === "fixed" ? parsed.data.assigneeId ?? null : null,
       points: parsed.data.points,
-      start_date: parsed.data.startDate,
-      created_by: user!.id,
     })
-    .select("id, space_id")
-    .single();
-
+    .eq("id", parsed.data.taskId)
+    .select("id")
+    .maybeSingle();
   if (error) return { error: error.message };
+  if (!updated) return { error: "Tarefa não encontrada ou sem permissão." };
 
-  // rodízio: grava a fila ordenada
+  // recria a fila de rodízio
+  await supabase.from("task_rotation_queue").delete().eq("task_id", parsed.data.taskId);
   if (parsed.data.assignmentType === "rotation") {
     const rotationUserIds = formData.getAll("rotationUserIds").map(String).filter(Boolean);
     if (rotationUserIds.length) {
       await supabase.from("task_rotation_queue").insert(
         rotationUserIds.map((userId, position) => ({
-          task_id: data.id,
+          task_id: parsed.data.taskId,
           user_id: userId,
           position,
         })),
@@ -76,9 +69,25 @@ export async function createTask(_prev: unknown, formData: FormData) {
     }
   }
 
-  // gera as ocorrências já na criação (não espera o cron diário)
-  await generateOccurrencesForTask(data.id);
+  // regenera ocorrências futuras: apaga as pendentes a partir de hoje e recria
+  const today = new Date().toISOString().slice(0, 10);
+  const service = createServiceClient();
+  await service
+    .from("task_occurrences")
+    .delete()
+    .eq("task_id", parsed.data.taskId)
+    .eq("status", "pending")
+    .gte("due_date", today);
+  await generateOccurrencesForTask(parsed.data.taskId);
 
-  revalidatePath(`/spaces/${data.space_id}`);
-  redirect(`/spaces/${data.space_id}`);
+  revalidatePath(`/spaces/${parsed.data.spaceId}`);
+  redirect(`/spaces/${parsed.data.spaceId}`);
+}
+
+export async function deleteTask(taskId: string, spaceId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("tasks").delete().eq("id", taskId);
+  if (error) return { error: error.message };
+  revalidatePath(`/spaces/${spaceId}`);
+  redirect(`/spaces/${spaceId}`);
 }

@@ -5,34 +5,34 @@
    Accent verde #4a7c59, tom adulto/minimalista, mobile-first.
 --------------------------------------------------------------------------- */
 :root {
-  --background: #fafaf8;
-  --foreground: #1c1c1a;
+  --background: #f5f4f0;
+  --foreground: #1d201e;
 
   --card: #ffffff;
-  --card-foreground: #1c1c1a;
+  --card-foreground: #1d201e;
 
   --primary: #4a7c59;
   --primary-foreground: #ffffff;
   --primary-hover: #3d6849;
 
-  --muted: #f0f0ec;
-  --muted-foreground: #6b6b66;
+  --muted: #efece4;
+  --muted-foreground: #8a8f89;
 
-  --accent: #eef3ef;
-  --accent-foreground: #2f4f3a;
+  --accent: #e6efe7;
+  --accent-foreground: #3c6649;
 
   /* pontos / gamificação */
-  --gold: #c98a2b;
+  --gold: #c0913f;
   --gold-foreground: #ffffff;
 
-  --destructive: #b4413c;
+  --destructive: #c0623a;
   --destructive-foreground: #ffffff;
 
-  --border: #e4e4df;
+  --border: #ececec;
   --input: #e4e4df;
   --ring: #4a7c59;
 
-  --radius: 0.875rem;
+  --radius: 0.9375rem;
 }
 
 @theme inline {

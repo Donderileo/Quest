@@ -14,6 +14,18 @@ const SIZES = {
   lg: "size-12 text-base",
 } as const;
 
+/** Paleta determinística por pessoa (mesmas cores do design). */
+const COLORS = [
+  "#b9744f", "#4a7c59", "#6d7fa8", "#a87faa",
+  "#c0913f", "#4f7d8c", "#c07a4f", "#7d6da8",
+];
+
+function colorFor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) | 0;
+  return COLORS[Math.abs(hash) % COLORS.length];
+}
+
 export function Avatar({
   name,
   src,
@@ -28,10 +40,11 @@ export function Avatar({
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center justify-center rounded-full bg-accent font-semibold text-accent-foreground select-none overflow-hidden",
+        "inline-flex shrink-0 items-center justify-center rounded-full font-bold text-white select-none overflow-hidden",
         SIZES[size],
         className,
       )}
+      style={src ? undefined : { backgroundColor: colorFor(name) }}
       title={name}
     >
       {src ? (
