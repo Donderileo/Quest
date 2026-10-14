@@ -34,7 +34,8 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+  const isPublic =
+    pathname === "/" || PUBLIC_PATHS.some((p) => pathname.startsWith(p));
   const isJoin = pathname.startsWith("/join"); // exige login, mas guarda o destino
 
   if (!user && !isPublic) {

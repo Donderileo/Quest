@@ -59,7 +59,12 @@ export async function signIn(_prev: unknown, formData: FormData) {
 
   if (error) return { error: error.message };
 
-  const next = (formData.get("next") as string) || "/homes";
+  const requested = formData.get("next");
+  // só caminhos internos: bloqueia open redirect ("//evil.com", "https://...")
+  const next =
+    typeof requested === "string" && /^\/(?![/\\])/.test(requested)
+      ? requested
+      : "/homes";
   redirect(next);
 }
 
