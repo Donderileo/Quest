@@ -69,7 +69,7 @@ export default async function TasksPage() {
                   : `${bucket} · ${format(parseISO(items[0].due_date), "EEE d", { locale: ptBR })}`;
               return (
                 <section key={bucket} className="space-y-[9px]">
-                  <h2 className="mb-2 text-xs font-bold uppercase tracking-wide text-[#9aa09b]">
+                  <h2 className="mb-2 text-xs font-bold uppercase tracking-wide text-subtle">
                     {label}
                   </h2>
                   {items.map((occ) => {

@@ -51,7 +51,7 @@ export function HomeSwitcher({ current, homes }: { current: Home; homes: Home[] 
               {h.id === current.id && <Check className="size-4 text-primary" strokeWidth={2.6} />}
             </button>
           ))}
-          <div className="h-px bg-[#f0efe9]" />
+          <div className="h-px bg-divider" />
           <button
             type="button"
             onClick={() => {

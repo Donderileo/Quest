@@ -9,6 +9,9 @@ const hanken = Hanken_Grotesk({
   display: "swap",
 });
 
+// Resolve o tema antes da primeira pintura (evita flash claro no modo escuro).
+const THEME_SCRIPT = `(function(){try{var p=localStorage.getItem("tend-theme")||"system";var d=p==="dark"||(p==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light";}catch(e){}})();`;
+
 export const metadata: Metadata = {
   title: "Tend — rotina da casa, compartilhada",
   description:
@@ -22,11 +25,13 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#4a7c59",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#4a7c59" },
+    { media: "(prefers-color-scheme: dark)", color: "#121412" },
+  ],
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -35,7 +40,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`${hanken.variable} h-full antialiased`}>
+    <html lang="pt-BR" className={`${hanken.variable} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className="bg-background text-foreground min-h-full flex flex-col">
         <ServiceWorkerRegister />
         {children}

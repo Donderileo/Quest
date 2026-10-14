@@ -32,7 +32,52 @@
   --input: #e4e4df;
   --ring: #4a7c59;
 
+  /* neutros semânticos (substituem hex soltos nos componentes) */
+  --subtle: #9aa09b;        /* rótulos, texto terciário */
+  --faint: #b4b8b2;         /* concluído, chevrons, desabilitado */
+  --strong-border: #d6dad4; /* checks, radios, tracejados */
+  --track: #eae8e1;         /* trilho de segmented control */
+  --sunken: #f8f7f3;        /* linhas rebaixadas dentro de cards */
+  --divider: #f0efe9;
+  --destructive-soft: #fbeee8;
+  --toast-action: #9fd3ac;
+  --tint-strength: 100%;
+
   --radius: 0.9375rem;
+  color-scheme: light;
+}
+
+/* Tema escuro: definido por data-theme (script no <head> resolve "sistema") */
+:root[data-theme="dark"] {
+  --background: #121412;
+  --foreground: #ecefe9;
+  --card: #1b1e1b;
+  --card-foreground: #ecefe9;
+  --primary: #55906a;
+  --primary-foreground: #ffffff;
+  --primary-hover: #4a8360;
+  --muted: #252925;
+  --muted-foreground: #98a098;
+  --accent: #1f2d23;
+  --accent-foreground: #a6d8b3;
+  --gold: #d6aa5c;
+  --destructive: #e0805a;
+  --border: #2a2e2a;
+  --input: #353a35;
+  --ring: #6fb383;
+  --subtle: #7f877f;
+  --faint: #5d655d;
+  --strong-border: #3f453f;
+  --track: #232723;
+  --sunken: #222622;
+  --divider: #262a26;
+  --destructive-soft: #33231c;
+  --toast-action: #2f6a42;
+  --tint-strength: 16%;
+  --material: rgba(27, 30, 27, 0.72);
+  --material-edge: rgba(255, 255, 255, 0.08);
+  --hairline: rgba(255, 255, 255, 0.08);
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -54,6 +99,13 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-subtle: var(--subtle);
+  --color-faint: var(--faint);
+  --color-strong: var(--strong-border);
+  --color-track: var(--track);
+  --color-sunken: var(--sunken);
+  --color-divider: var(--divider);
+  --color-destructive-soft: var(--destructive-soft);
 
   --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 
@@ -70,4 +122,68 @@
 body {
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* ---------------------------------------------------------------------------
+   Apple-style foundation: tipografia óptica, materiais, movimento
+--------------------------------------------------------------------------- */
+:root {
+  /* spring critically-damped (sem overshoot) e spring com leve bounce, via linear() */
+  --ease-spring: linear(0, 0.26 6%, 0.62 14%, 0.86 24%, 0.96 36%, 0.995 52%, 1);
+  --ease-bounce: linear(0, 0.3 6%, 0.7 14%, 1.06 26%, 1.07 34%, 0.99 48%, 1.005 64%, 1);
+  --material: rgba(255, 255, 255, 0.72);
+  --material-edge: rgba(255, 255, 255, 0.6);
+  --hairline: rgba(29, 32, 30, 0.08);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  font-optical-sizing: auto;
+}
+
+/* tracking e leading dependem do tamanho: grande fica apertado, pequeno respira */
+h1 { letter-spacing: -0.028em; line-height: 1.08; }
+h2 { letter-spacing: -0.02em; line-height: 1.15; }
+h3 { letter-spacing: -0.01em; line-height: 1.25; }
+small, .text-xs { letter-spacing: 0.01em; }
+
+/* material translúcido: o conteúdo rola por baixo */
+.material {
+  background: var(--material);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  border-top: 1px solid var(--material-edge);
+  box-shadow: 0 -1px 0 var(--hairline);
+}
+
+/* resposta no toque, não na soltura */
+.press {
+  transition: transform 380ms var(--ease-spring);
+  touch-action: manipulation;
+}
+.press:active {
+  transform: scale(0.96);
+  transition-duration: 90ms;
+}
+
+/* check "pop": só quando o gesto carregou intenção (concluir) */
+@keyframes pop {
+  0% { transform: scale(0.8); }
+  100% { transform: scale(1); }
+}
+.pop { animation: pop 420ms var(--ease-bounce); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+  .press:active { transform: none; opacity: 0.7; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .material { background: var(--card); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+@media (prefers-contrast: more) {
+  .material { background: var(--card); border-top-color: var(--foreground); }
 }

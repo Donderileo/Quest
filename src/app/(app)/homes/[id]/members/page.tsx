@@ -62,7 +62,7 @@ export default async function MembersPage({
         {home.name} · {memberCount} {memberCount === 1 ? "pessoa" : "pessoas"}
       </p>
 
-      <div className="mt-4 mb-3 text-xs font-bold uppercase tracking-wide text-[#9aa09b]">
+      <div className="mt-4 mb-3 text-xs font-bold uppercase tracking-wide text-subtle">
         Quem está em cada ambiente
       </div>
 
@@ -86,18 +86,18 @@ export default async function MembersPage({
                     </span>
                   )}
                 </div>
-                <ChevronRight className="size-4 text-[#c2c6c0]" />
+                <ChevronRight className="size-4 text-faint" />
               </div>
               <div className="mt-3 flex flex-wrap gap-1.5 pl-12">
                 {userSpaces.length ? (
                   userSpaces.map((s, i) => (
                     <span
                       key={i}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-background px-2.5 py-1.5 text-[12.5px] font-bold text-[#4b504b]"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-background px-2.5 py-1.5 text-[12.5px] font-bold text-foreground/80"
                     >
                       <span
                         className="inline-block size-[7px] rounded-sm"
-                        style={{ backgroundColor: SPACE_DOT[s.icon ?? ""] ?? "#9aa09b" }}
+                        style={{ backgroundColor: SPACE_DOT[s.icon ?? ""] ?? "var(--subtle)" }}
                       />
                       {s.name}
                     </span>

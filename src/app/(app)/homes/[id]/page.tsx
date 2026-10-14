@@ -128,14 +128,14 @@ export default async function HomePage({
 
       {/* código de convite */}
       <div className="rounded-[15px] bg-card p-4 shadow-[0_2px_7px_-3px_rgba(40,45,40,.07)]">
-        <div className="text-xs font-bold uppercase tracking-wide text-[#9aa09b]">Código de convite</div>
+        <div className="text-xs font-bold uppercase tracking-wide text-subtle">Código de convite</div>
         <div className="mt-1 font-mono text-lg font-bold tracking-wider text-accent-foreground">{home.invite_code}</div>
       </div>
 
       {/* ambientes */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wide text-[#9aa09b]">
+          <span className="text-xs font-bold uppercase tracking-wide text-subtle">
             Ambientes · {spaceIds.length}
           </span>
           <Link
@@ -148,7 +148,7 @@ export default async function HomePage({
         </div>
 
         {!spaces?.length ? (
-          <div className="rounded-[18px] border border-dashed border-[#d6d3ca] py-10 text-center text-sm text-muted-foreground">
+          <div className="rounded-[18px] border border-dashed border-strong py-10 text-center text-sm text-muted-foreground">
             Nenhum ambiente ainda. Crie o primeiro!
           </div>
         ) : (
@@ -167,7 +167,7 @@ export default async function HomePage({
                   <div className="flex items-center gap-3">
                     <div
                       className="flex size-[46px] shrink-0 items-center justify-center rounded-[13px] text-2xl"
-                      style={{ backgroundColor: tint }}
+                      style={{ backgroundColor: `color-mix(in oklab, ${tint} var(--tint-strength), var(--card))` }}
                     >
                       {SPACE_ICONS[space.icon ?? ""] ?? "🏠"}
                     </div>
@@ -185,7 +185,7 @@ export default async function HomePage({
                         {mem.length} {mem.length === 1 ? "membro" : "membros"} · {tCount} {tCount === 1 ? "tarefa" : "tarefas"}
                       </div>
                     </div>
-                    <ChevronRight className="size-5 shrink-0 text-[#c2c6c0]" />
+                    <ChevronRight className="size-5 shrink-0 text-faint" />
                   </div>
                   <div className="mt-3 flex items-center justify-between">
                     <div className="flex">
@@ -203,11 +203,11 @@ export default async function HomePage({
                       )}
                     </div>
                     {due > 0 ? (
-                      <span className="rounded-[9px] bg-[#fbeee8] px-2.5 py-1 text-[12.5px] font-bold text-[#c0623a]">
+                      <span className="rounded-[9px] bg-destructive-soft px-2.5 py-1 text-[12.5px] font-bold text-destructive">
                         {due} p/ hoje
                       </span>
                     ) : tCount > 0 ? (
-                      <span className="rounded-[9px] bg-[#eef1ed] px-2.5 py-1 text-[12.5px] font-bold text-[#7d847e]">
+                      <span className="rounded-[9px] bg-track px-2.5 py-1 text-[12.5px] font-bold text-subtle">
                         Tudo em dia
                       </span>
                     ) : null}
@@ -222,7 +222,7 @@ export default async function HomePage({
       {/* membros da casa */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wide text-[#9aa09b]">
+          <span className="text-xs font-bold uppercase tracking-wide text-subtle">
             Membros · {memberCount}
           </span>
           <Link href={`/homes/${id}/members`} className="text-[13px] font-bold text-primary">
@@ -235,7 +235,7 @@ export default async function HomePage({
             const p = (m.profiles as any) as { id: string; name: string; avatar_url: string | null };
             return (
               <div key={p.id}>
-                {i > 0 && <div className="mx-[15px] h-px bg-[#f0efe9]" />}
+                {i > 0 && <div className="mx-[15px] h-px bg-divider" />}
                 <div className="flex items-center gap-3 px-[15px] py-3">
                   <Avatar name={p.name} src={p.avatar_url} size="md" className="size-[34px] text-[13px]" />
                   <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -246,7 +246,7 @@ export default async function HomePage({
                       </span>
                     )}
                   </div>
-                  <ChevronRight className="size-4 text-[#c2c6c0]" />
+                  <ChevronRight className="size-4 text-faint" />
                 </div>
               </div>
             );

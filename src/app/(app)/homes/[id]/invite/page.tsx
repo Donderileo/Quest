@@ -31,7 +31,7 @@ export default async function InvitePage({
       </Link>
 
       <h1 className="mt-4 text-[26px] font-extrabold tracking-tight">Convide para sua casa</h1>
-      <p className="mt-1.5 text-[15px] font-medium leading-snug text-[#6c726d]">
+      <p className="mt-1.5 text-[15px] font-medium leading-snug text-muted-foreground">
         Compartilhe este código para adicionar pessoas à{" "}
         <b className="font-bold text-foreground">{home.name}</b>. Depois que entrarem, você as adiciona aos ambientes.
       </p>

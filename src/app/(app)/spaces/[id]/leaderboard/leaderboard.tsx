@@ -62,7 +62,7 @@ export function Leaderboard({
       </div>
 
       {/* toggle */}
-      <div className="mt-4 flex gap-1 rounded-xl bg-[#eae8e1] p-1">
+      <div className="mt-4 flex gap-1 rounded-xl bg-track p-1">
         {([
           { v: "week", label: "Esta semana" },
           { v: "all", label: "Sempre" },
@@ -87,15 +87,15 @@ export function Leaderboard({
           <div className="absolute -right-8 -top-8 size-28 rounded-full bg-white/[0.07]" />
           <Avatar name={leader.name} src={leader.avatar_url} size="lg" className="size-[60px] bg-white !text-primary text-2xl" />
           <div className="flex-1">
-            <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-white/80">
+            <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-white/90">
               <Trophy className="size-3.5" /> Liderando
             </div>
             <div className="text-[22px] font-extrabold tracking-tight text-white">{leader.name}</div>
-            {gap > 0 && <div className="text-[13px] font-semibold text-white/80">À frente por {gap} pontos</div>}
+            {gap > 0 && <div className="text-[13px] font-semibold text-white/90">À frente por {gap} pontos</div>}
           </div>
           <div className="text-right">
             <div className="text-3xl font-extrabold leading-none tracking-tight text-white">{leader.points}</div>
-            <div className="text-xs font-semibold text-white/80">pontos</div>
+            <div className="text-xs font-semibold text-white/90">pontos</div>
           </div>
         </div>
       ) : (
@@ -109,7 +109,7 @@ export function Leaderboard({
         <div className="mt-4 space-y-[9px]">
           {rank.map((r, i) => (
             <div key={i} className="flex items-center gap-3 rounded-[15px] bg-card p-[13px] shadow-[0_2px_7px_-3px_rgba(40,45,40,.07)]">
-              <span className={cn("w-[22px] text-center text-[15px] font-extrabold", i === 0 ? "text-primary" : "text-[#9aa09b]")}>
+              <span className={cn("w-[22px] text-center text-[15px] font-extrabold", i === 0 ? "text-primary" : "text-subtle")}>
                 {i + 1}
               </span>
               <Avatar name={r.name} src={r.avatar_url} size="md" className="size-[34px] text-[13px]" />
@@ -123,12 +123,12 @@ export function Leaderboard({
       {/* atividade recente */}
       {activity.length > 0 && (
         <>
-          <div className="mb-3 mt-6 text-xs font-bold uppercase tracking-wide text-[#9aa09b]">Recente</div>
+          <div className="mb-3 mt-6 text-xs font-bold uppercase tracking-wide text-subtle">Recente</div>
           <div className="space-y-3">
             {activity.map((a, i) => (
               <div key={i} className="flex items-center gap-3">
                 <Avatar name={a.name} src={a.avatar_url} size="sm" className="size-[30px] text-xs" />
-                <span className="flex-1 text-sm font-medium text-[#4b504b]">
+                <span className="flex-1 text-sm font-medium text-foreground/80">
                   <span className="font-bold text-foreground">{a.name}</span> concluiu {a.title}
                 </span>
                 {a.points > 0 && <span className="text-[13.5px] font-extrabold text-primary">+{a.points}</span>}

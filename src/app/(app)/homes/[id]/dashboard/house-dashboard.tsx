@@ -58,7 +58,7 @@ export function HouseDashboard({
       <p className="mt-2 text-[13px] font-semibold text-muted-foreground">{homeName}</p>
 
       {/* toggle */}
-      <div className="mt-4 flex gap-1 rounded-xl bg-[#eae8e1] p-1">
+      <div className="mt-4 flex gap-1 rounded-xl bg-track p-1">
         {([
           { v: "today", label: "Hoje" },
           { v: "week", label: "Esta semana" },
@@ -81,20 +81,20 @@ export function HouseDashboard({
       {/* resumo */}
       <div className="mt-4 flex items-center justify-between rounded-[18px] bg-primary p-5 text-white shadow-[0_10px_24px_-10px_rgba(74,124,89,.55)]">
         <div>
-          <div className="text-[13px] font-semibold text-white/80">Tarefas concluídas {periodLabel}</div>
+          <div className="text-[13px] font-semibold text-white/90">Tarefas concluídas {periodLabel}</div>
           <div className="mt-0.5 text-[26px] font-extrabold tracking-tight">{totalForPeriod}</div>
         </div>
       </div>
 
       {/* ranking por pessoa */}
-      <div className="mb-3 mt-6 text-xs font-bold uppercase tracking-wide text-[#9aa09b]">Por pessoa</div>
+      <div className="mb-3 mt-6 text-xs font-bold uppercase tracking-wide text-subtle">Por pessoa</div>
       <div className="space-y-[9px]">
         {ranked.map((p, i) => {
           const val = p[period];
           return (
             <div key={i} className="rounded-[15px] bg-card p-[14px] shadow-[0_2px_7px_-3px_rgba(40,45,40,.07)]">
               <div className="flex items-center gap-3">
-                <span className={cn("w-5 text-center text-[15px] font-extrabold", i === 0 && val > 0 ? "text-primary" : "text-[#9aa09b]")}>
+                <span className={cn("w-5 text-center text-[15px] font-extrabold", i === 0 && val > 0 ? "text-primary" : "text-subtle")}>
                   {i + 1}
                 </span>
                 <Avatar name={p.name} src={p.avatar_url} size="md" className="size-[34px] text-[13px]" />

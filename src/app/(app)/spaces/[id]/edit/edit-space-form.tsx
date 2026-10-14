@@ -57,7 +57,7 @@ export function EditSpaceForm({
           Cancelar
         </Link>
         <span className="text-[17px] font-extrabold tracking-tight">Editar ambiente</span>
-        <button type="submit" disabled={pending} className="text-[15px] font-bold text-primary disabled:text-[#c2c6c0]">
+        <button type="submit" disabled={pending} className="text-[15px] font-bold text-primary disabled:text-faint">
           {pending ? "..." : "Salvar"}
         </button>
       </div>
@@ -72,7 +72,7 @@ export function EditSpaceForm({
 
         {/* nome */}
         <div>
-          <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-[#9aa09b]">Nome</div>
+          <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-subtle">Nome</div>
           <input
             name="name"
             defaultValue={space.name}
@@ -83,7 +83,7 @@ export function EditSpaceForm({
 
         {/* ícone */}
         <div>
-          <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-[#9aa09b]">Ícone</div>
+          <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-subtle">Ícone</div>
           <div className="grid grid-cols-3 gap-2">
             {ICONS.map(({ value, emoji, label }) => (
               <button
@@ -104,8 +104,8 @@ export function EditSpaceForm({
 
         {/* modo */}
         <div>
-          <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-[#9aa09b]">Modo</div>
-          <div className="flex gap-1 rounded-xl bg-[#f1efe9] p-1">
+          <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-subtle">Modo</div>
+          <div className="flex gap-1 rounded-xl bg-track p-1">
             {([
               { value: "simple", label: "Simples" },
               { value: "gamified", label: "★ Pontos" },
@@ -127,7 +127,7 @@ export function EditSpaceForm({
 
         {/* membros */}
         <div>
-          <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-[#9aa09b]">
+          <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-subtle">
             Quem participa deste ambiente
           </div>
           <div className="flex flex-col gap-2">
@@ -148,7 +148,7 @@ export function EditSpaceForm({
                   <span
                     className={cn(
                       "flex size-6 items-center justify-center rounded-full border-2",
-                      on ? "border-primary bg-primary text-white" : "border-[#cdd1cb]",
+                      on ? "border-primary bg-primary text-white" : "border-strong",
                     )}
                   >
                     {on && <Check className="size-3.5" strokeWidth={3} />}

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { ThemeSwitch } from "@/components/theme-switch";
 import { signOut } from "@/app/(auth)/actions";
 
 export default async function ProfilePage() {
@@ -29,6 +30,8 @@ export default async function ProfilePage() {
           <p className="text-sm text-muted-foreground">{user.email}</p>
         </div>
       </div>
+
+      <ThemeSwitch />
 
       <form action={signOut}>
         <Button type="submit" variant="outline" className="w-full">

@@ -114,3 +114,20 @@ export async function deleteSpace(spaceId: string, homeId: string) {
   if (error) return { error: error.message };
   redirect(`/homes/${homeId}`);
 }
+
+export async function uncompleteOccurrence(occurrenceId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  // o trigger limpa completed_* e estorna os pontos
+  await supabase
+    .from("task_occurrences")
+    .update({ status: "pending" })
+    .eq("id", occurrenceId)
+    .eq("status", "done");
+
+  revalidatePath("/spaces/[id]", "page");
+}

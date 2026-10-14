@@ -80,7 +80,7 @@ export function TaskForm({
         <span className="text-[17px] font-extrabold tracking-tight">
           {taskId ? "Editar tarefa" : "Nova tarefa"}
         </span>
-        <button type="submit" disabled={pending} className="text-[15px] font-bold text-primary disabled:text-[#c2c6c0]">
+        <button type="submit" disabled={pending} className="text-[15px] font-bold text-primary disabled:text-faint">
           {pending ? "..." : "Salvar"}
         </button>
       </div>
@@ -100,22 +100,22 @@ export function TaskForm({
 
         {/* título */}
         <div>
-          <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-[#9aa09b]">Tarefa</div>
+          <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-subtle">Tarefa</div>
           <input
             name="title"
             defaultValue={initial.title}
             placeholder="ex: Lavar a louça"
             autoFocus={!taskId}
             required
-            className="w-full rounded-[15px] bg-card p-4 text-[17px] font-bold text-foreground shadow-[0_2px_7px_-3px_rgba(40,45,40,.07)] outline-none placeholder:font-semibold placeholder:text-[#c2c6c0] focus:ring-2 focus:ring-primary/40"
+            className="w-full rounded-[15px] bg-card p-4 text-[17px] font-bold text-foreground shadow-[0_2px_7px_-3px_rgba(40,45,40,.07)] outline-none placeholder:font-semibold placeholder:text-faint focus:ring-2 focus:ring-primary/40"
           />
         </div>
 
         {/* recorrência */}
         <div>
-          <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-[#9aa09b]">Repete</div>
+          <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-subtle">Repete</div>
           <div className="rounded-[15px] bg-card p-3.5 shadow-[0_2px_7px_-3px_rgba(40,45,40,.07)]">
-            <div className="flex gap-1 rounded-xl bg-[#f1efe9] p-1">
+            <div className="flex gap-1 rounded-xl bg-track p-1">
               {(["daily", "weekly", "custom"] as const).map((r) => {
                 const labels = { daily: "Diário", weekly: "Semanal", custom: "Intervalo" };
                 return (
@@ -143,7 +143,7 @@ export function TaskForm({
                     onClick={() => toggleDay(i)}
                     className={cn(
                       "flex size-9 items-center justify-center rounded-full text-[13px] font-bold transition-colors",
-                      selectedDays.includes(i) ? "bg-primary text-white" : "bg-[#f1efe9] text-[#a9aea8]",
+                      selectedDays.includes(i) ? "bg-primary text-white" : "bg-track text-subtle",
                     )}
                   >
                     {d}
@@ -160,7 +160,7 @@ export function TaskForm({
                   min={1}
                   value={interval}
                   onChange={(e) => setInterval(Math.max(1, Number(e.target.value)))}
-                  className="w-16 rounded-lg bg-[#f1efe9] px-3 py-1.5 text-center font-bold outline-none"
+                  className="w-16 rounded-lg bg-track px-3 py-1.5 text-center font-bold outline-none"
                 />
                 <span className="text-sm font-medium text-muted-foreground">dias</span>
               </div>
@@ -170,9 +170,9 @@ export function TaskForm({
 
         {/* responsável */}
         <div>
-          <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-[#9aa09b]">Responsável</div>
+          <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-subtle">Responsável</div>
           <div className="rounded-[15px] bg-card p-3.5 shadow-[0_2px_7px_-3px_rgba(40,45,40,.07)]">
-            <div className="flex gap-1 rounded-xl bg-[#f1efe9] p-1">
+            <div className="flex gap-1 rounded-xl bg-track p-1">
               {(["fixed", "rotation"] as const).map((a) => {
                 const labels = { fixed: "Fixo", rotation: "Rodízio" };
                 return (
@@ -210,7 +210,7 @@ export function TaskForm({
                     onClick={() => setAssigneeId(m.id)}
                     className={cn(
                       "flex items-center gap-3 rounded-[11px] p-2 transition-colors",
-                      assigneeId === m.id ? "bg-accent" : "bg-[#f8f7f3]",
+                      assigneeId === m.id ? "bg-accent" : "bg-sunken",
                     )}
                   >
                     <Avatar name={m.name} src={m.avatar_url} size="sm" className="size-7 text-[11px]" />
@@ -218,7 +218,7 @@ export function TaskForm({
                     <span
                       className={cn(
                         "flex size-5 items-center justify-center rounded-full border-2",
-                        assigneeId === m.id ? "border-primary bg-primary" : "border-[#cdd1cb]",
+                        assigneeId === m.id ? "border-primary bg-primary" : "border-strong",
                       )}
                     >
                       {assigneeId === m.id && <span className="size-2 rounded-full bg-white" />}
@@ -253,9 +253,9 @@ export function TaskForm({
                       key={m.id}
                       type="button"
                       onClick={() => toggleRotation(m.id)}
-                      className="flex items-center gap-3 rounded-[11px] bg-[#f8f7f3] p-2"
+                      className="flex items-center gap-3 rounded-[11px] bg-sunken p-2"
                     >
-                      <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-[#cdd1cb] text-[11px] font-extrabold text-white">
+                      <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-strong text-[11px] font-extrabold text-white">
                         +
                       </span>
                       <Avatar name={m.name} src={m.avatar_url} size="sm" className="size-7 text-[11px]" />
@@ -270,7 +270,7 @@ export function TaskForm({
         {/* pontos */}
         {gamified && (
           <div>
-            <div className="mb-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-[#9aa09b]">
+            <div className="mb-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-subtle">
               Pontos
               <span className="inline-flex items-center gap-1 rounded-md bg-accent px-2 py-0.5 text-[10px] font-bold normal-case tracking-normal text-accent-foreground">
                 <span className="inline-block size-[5px] rotate-45 bg-primary" />
@@ -283,7 +283,7 @@ export function TaskForm({
                 <button
                   type="button"
                   onClick={() => setPoints((p) => Math.max(0, p - 5))}
-                  className="flex size-8 items-center justify-center rounded-[10px] bg-[#f1efe9] text-lg font-bold text-muted-foreground"
+                  className="flex size-8 items-center justify-center rounded-[10px] bg-track text-lg font-bold text-muted-foreground"
                 >
                   −
                 </button>

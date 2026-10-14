@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Check, RotateCcw } from "lucide-react";
+import { useState } from "react";
+import { RotateCcw } from "lucide-react";
 import { format, isToday, isTomorrow, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { Avatar } from "./ui/avatar";
 import { TaskRow } from "./task-row";
-import { completeOccurrence } from "@/app/(app)/spaces/[id]/actions";
+import { CheckButton } from "./check-button";
 
 type Profile = { name: string; avatar_url: string | null } | null;
 
@@ -44,15 +44,7 @@ function dayLabel(dateStr: string): string {
 }
 
 function OccurrenceRow({ occ, gamified }: { occ: Occurrence; gamified: boolean }) {
-  const [pending, start] = useTransition();
   const done = occ.status === "done";
-
-  function complete() {
-    if (done) return;
-    start(() => {
-      void completeOccurrence(occ.id);
-    });
-  }
 
   const doneInfo =
     done && occ.completed_at
@@ -61,20 +53,10 @@ function OccurrenceRow({ occ, gamified }: { occ: Occurrence; gamified: boolean }
 
   return (
     <div className="flex items-center gap-3 rounded-[15px] bg-card p-[14px] shadow-[0_2px_7px_-3px_rgba(40,45,40,.07)]">
-      <button
-        onClick={complete}
-        disabled={done || pending}
-        aria-label={done ? "Concluído" : "Marcar como feito"}
-        className={cn(
-          "flex size-[25px] shrink-0 items-center justify-center rounded-full border-2 transition-colors",
-          done ? "border-primary bg-primary text-white" : "border-[#d6dad4]",
-        )}
-      >
-        {done && <Check className="size-3.5" strokeWidth={3} />}
-      </button>
+      <CheckButton occurrenceId={occ.id} done={done} title={occ.tasks.title} />
 
       <div className="min-w-0 flex-1">
-        <p className={cn("truncate font-bold tracking-tight", done && "text-[#b4b8b2] line-through")}>
+        <p className={cn("truncate font-bold tracking-tight", done && "text-faint line-through")}>
           {occ.tasks.title}
         </p>
         <div className="mt-0.5 text-xs font-semibold text-muted-foreground">
@@ -125,7 +107,7 @@ export function SpaceTasks({
   return (
     <section className="space-y-4">
       {/* segmented */}
-      <div className="flex gap-1 rounded-[13px] bg-[#eae8e1] p-1">
+      <div className="flex gap-1 rounded-[13px] bg-track p-1">
         {([
           { v: "hoje", label: "Hoje" },
           { v: "semana", label: "Esta semana" },
@@ -165,7 +147,7 @@ export function SpaceTasks({
           <div className="space-y-5">
             {days.map((day) => (
               <div key={day} className="space-y-[9px]">
-                <h3 className="text-xs font-bold uppercase tracking-wide text-[#9aa09b]">{dayLabel(day)}</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wide text-subtle">{dayLabel(day)}</h3>
                 {byDay.get(day)!.map((o) => (
                   <OccurrenceRow key={o.id} occ={o} gamified={gamified} />
                 ))}
