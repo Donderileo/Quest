@@ -36,7 +36,13 @@ export async function signUp(_prev: unknown, formData: FormData) {
     },
   });
 
-  if (error) return { error: error.message };
+  if (error) {
+    // o trigger do banco (rollout fechado) devolve "Database error saving new user"
+    if (/saving new user|signup_not_allowed/i.test(error.message)) {
+      return { error: "O Tend está em acesso por convite. Peça para liberarem o seu e-mail." };
+    }
+    return { error: error.message };
+  }
   redirect("/homes");
 }
 

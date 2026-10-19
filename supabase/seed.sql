@@ -16,6 +16,12 @@
 --   Pedro 33333333-3333-3333-3333-333333333333
 
 -- ---------------------------------------------------------------------------
+-- 0) Allowlist do rollout fechado (o trigger em auth.users exige o e-mail aqui)
+-- ---------------------------------------------------------------------------
+insert into public.beta_allowlist (email, note) values
+  ('leo@tend.app', 'seed'), ('ana@tend.app', 'seed'), ('pedro@tend.app', 'seed');
+
+-- ---------------------------------------------------------------------------
 -- 1) Usuários de auth (o trigger on_auth_user_created cria os profiles)
 -- ---------------------------------------------------------------------------
 insert into auth.users (

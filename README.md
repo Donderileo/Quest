@@ -165,6 +165,8 @@ curl http://localhost:3000/api/cron/generate-occurrences \
 
 ## Deploy
 
+> **Roteiro completo para o rollout fechado: [DEPLOY.md](DEPLOY.md)** (Supabase, Vercel, allowlist de cadastro, teste de fumaça, operação).
+
 1. **Supabase prod:** `supabase login` → `supabase link --project-ref <ref>` → `supabase db push`. Pegar as 3 chaves em *Project Settings → API*. Em *Auth → Email*, desativar "Confirm email" (ou configurar SMTP) enquanto não há envio de e-mail.
 2. **Vercel:** importar o repositório, configurar `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `NEXT_PUBLIC_APP_URL`. Deploy.
 3. **Cron:** `vercel.json` já agenda `generate-occurrences` diariamente às 06:00 UTC; a Vercel injeta o `CRON_SECRET` no header automaticamente.
