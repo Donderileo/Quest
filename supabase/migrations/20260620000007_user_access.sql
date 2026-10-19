@@ -48,9 +48,10 @@ create trigger on_auth_user_created_access
   after insert on auth.users
   for each row execute function public.handle_new_user_access();
 
--- contas que já existiam (dev local) continuam funcionando
-insert into public.user_access (user_id, status, decided_at)
-select id, 'approved', now() from auth.users
+-- contas que já existiam entram como 'pending' (nunca aprovadas automaticamente);
+-- o seed de dev aprova os usuários de teste, e em produção o admin aprova pelo painel.
+insert into public.user_access (user_id)
+select id from auth.users
 on conflict (user_id) do nothing;
 
 create or replace function public.is_approved()
