@@ -1,3 +1,8 @@
+-- Substitui a allowlist da migration 7 (já aplicada em produção) pela aprovação por admin.
+drop trigger if exists trg_beta_allowlist on auth.users;
+drop function if exists public.enforce_beta_allowlist();
+drop table if exists public.beta_allowlist;
+
 -- Rollout fechado: cadastro livre, acesso só após aprovação do admin do sistema.
 --
 -- Fluxo: cadastro -> código de 6 dígitos por e-mail -> status 'pending' -> admin aprova.

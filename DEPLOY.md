@@ -12,7 +12,7 @@ Legenda: 🧑 = ação sua (precisa de login/segredo) · 🤖 = o Claude pode fa
 
 ## 0. Pré-voo ✅
 - Build, lint e testes passam (`npm run build && npm run lint && npm test`).
-- 7 migrations versionadas (a `…000007_user_access.sql` cria a aprovação por admin).
+- 8 migrations versionadas (a `…000008_user_access.sql` cria a aprovação por admin e substitui a allowlist da 7).
 - Cron protegido (`CRON_SECRET` obrigatório) e datas no fuso `America/Sao_Paulo`.
 - `vercel.json`: funções em `gru1` (São Paulo) + cron diário 06:00 UTC (03:00 em Brasília).
 
@@ -22,7 +22,7 @@ Legenda: 🧑 = ação sua (precisa de login/segredo) · 🤖 = o Claude pode fa
    ```bash
    npx supabase login
    npx supabase link --project-ref <REF>      # o REF está na URL do projeto
-   npx supabase db push                        # aplica as 7 migrations. NÃO roda o seed.
+   npx supabase db push                        # aplica as migrations pendentes. NÃO roda o seed.
    ```
 3. **Authentication → Providers → Email**: deixe **Confirm email LIGADO** (é ele que envia o código) e confira que o tamanho do código (*Email OTP Length*) é 6.
 4. **Authentication → Emails → Templates → Confirm signup**: assunto `Seu código do Tend` e cole o conteúdo de [`supabase/templates/confirmation.html`](supabase/templates/confirmation.html). Esse template mostra `{{ .Token }}` (o código); sem ele o e-mail sairia com *link* em vez de código.
