@@ -36,20 +36,22 @@ async function rememberEmail(email: string) {
  */
 function authErrorMessage(error: { message: string; status?: number; code?: string; name?: string }) {
   console.error("[auth]", error.name, error.status, error.code, error.message);
+  // código técnico curto (sem dados pessoais) para diagnóstico quando o usuário reportar
+  const ref = `(ref: ${error.status ?? "-"}/${error.code ?? error.name ?? "erro"})`;
+
   if (error.code === "over_email_send_rate_limit" || error.status === 429) {
-    return "Muitas tentativas. Aguarde alguns minutos e tente de novo.";
+    return `Muitas tentativas. Aguarde alguns minutos e tente de novo. ${ref}`;
   }
   if (error.code === "user_already_exists" || error.code === "email_exists") {
     return "Este e-mail já tem cadastro. Entre com a sua senha.";
   }
-  if (
-    (error.status ?? 0) >= 500 ||
-    error.message.trim() === "{}" ||
-    /sending|smtp|email/i.test(error.message)
-  ) {
-    return "Não conseguimos enviar o e-mail de confirmação agora. Tente de novo em alguns instantes.";
+  if (error.code === "email_address_invalid") {
+    return `Este e-mail não foi aceito. Use outro endereço. ${ref}`;
   }
-  return error.message;
+  if ((error.status ?? 0) >= 500 || error.message.trim() === "{}") {
+    return `Não conseguimos enviar o e-mail de confirmação agora. Tente de novo em alguns instantes. ${ref}`;
+  }
+  return `${error.message} ${ref}`;
 }
 
 export async function signUp(_prev: unknown, formData: FormData) {
