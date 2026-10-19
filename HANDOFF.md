@@ -81,6 +81,15 @@ Data de referência: outubro/2026. Autor do produto: Leo (donderileo@gmail.com).
 - **Rodízio:** a posição na fila é (ocorrências antes da janela) + índice, não a contagem total — rodar a geração duas vezes não desloca ninguém.
 - **Cron** e actions compartilham `generateOccurrences()` (consultas em lote, upsert por tarefa).
 
+### 2.4c Acesso: cadastro livre + confirmação por código + aprovação do admin
+- **Fluxo:** signUp → e-mail com **código de 6 dígitos** (template `supabase/templates/confirmation.html`, não link: no PWA/iOS o link abre no Safari e perde a sessão) → `user_access.status='pending'` → admin aprova em `/admin`.
+- **`user_access` é tabela separada de `profiles` de propósito:** `profiles` tem update do próprio usuário; `status/is_admin` lá permitiria auto-aprovação. Usuários só têm SELECT da própria linha; escrita só service role/SQL.
+- **Gate no banco:** `is_home_member`, `home_role`, `create_home` e `join_home` exigem `is_approved()`. Pendente/bloqueado não lê nem escreve nada, nem via API direta (testado com curl).
+- **Admin:** flag `is_admin` ligada **só por SQL** (sem rota que promova admin; sem credencial de admin em código/env). `/admin` dá 404 a não-admin. Ações verificam `is_admin` com o cliente do usuário (RLS) antes de usar a service role; ninguém altera o próprio acesso nem o de admins.
+- **E-mail do cadastro em andamento** vai em cookie httpOnly (`tend_verify_email`), nunca na URL.
+- **Pendente:** tela `/pending` faz `router.refresh()` a cada 8 s e avança sozinha quando aprovado. Sem e-mail de "você foi liberado" (futuro).
+- **MFA do admin e CAPTCHA no cadastro:** adiados (ver DEPLOY.md seção 6).
+
 ### 2.5 Realtime via router.refresh()
 - **Decisão:** componente client `RealtimeRefresh` assina `postgres_changes` nas tabelas (`task_occurrences`, `space_member_points`, `tasks`) e chama `router.refresh()` ao receber evento.
 - **Por quê:** o refetch acontece no **servidor**, sob RLS — o navegador só é avisado "algo mudou". Sem vazamento; pior caso é um refresh desnecessário.

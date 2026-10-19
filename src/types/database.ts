@@ -420,6 +420,33 @@ export type Database = {
           },
         ]
       }
+      user_access: {
+        Row: {
+          decided_at: string | null
+          decided_by: string | null
+          is_admin: boolean
+          requested_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          decided_at?: string | null
+          decided_by?: string | null
+          is_admin?: boolean
+          requested_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          decided_at?: string | null
+          decided_by?: string | null
+          is_admin?: boolean
+          requested_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -446,7 +473,9 @@ export type Database = {
         Args: { h: string }
         Returns: Database["public"]["Enums"]["member_role"]
       }
+      is_approved: { Args: never; Returns: boolean }
       is_home_member: { Args: { h: string }; Returns: boolean }
+      is_system_admin: { Args: never; Returns: boolean }
       join_home: {
         Args: { code: string }
         Returns: {

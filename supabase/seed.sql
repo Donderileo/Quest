@@ -16,12 +16,6 @@
 --   Pedro 33333333-3333-3333-3333-333333333333
 
 -- ---------------------------------------------------------------------------
--- 0) Allowlist do rollout fechado (o trigger em auth.users exige o e-mail aqui)
--- ---------------------------------------------------------------------------
-insert into public.beta_allowlist (email, note) values
-  ('leo@tend.app', 'seed'), ('ana@tend.app', 'seed'), ('pedro@tend.app', 'seed');
-
--- ---------------------------------------------------------------------------
 -- 1) Usuários de auth (o trigger on_auth_user_created cria os profiles)
 -- ---------------------------------------------------------------------------
 insert into auth.users (
@@ -65,6 +59,14 @@ values
    '{"sub":"33333333-3333-3333-3333-333333333333","email":"pedro@tend.app"}',
    'email', 'pedro@tend.app', now(), now(), now())
 on conflict (id) do nothing;
+
+-- ---------------------------------------------------------------------------
+-- 1b) Acesso: o trigger criou as linhas como 'pending'; no dev todos entram
+--     aprovados e o Leo é admin do sistema (painel /admin).
+-- ---------------------------------------------------------------------------
+update public.user_access
+   set status = 'approved', decided_at = now(),
+       is_admin = (user_id = '11111111-1111-1111-1111-111111111111');
 
 -- ---------------------------------------------------------------------------
 -- 2) Casa + membros

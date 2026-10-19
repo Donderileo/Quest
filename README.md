@@ -123,7 +123,7 @@ Todos com a senha **`tend1234`**, na casa **"Casa de Teste"** (código `TESTE123
 
 | E-mail | Papel |
 |---|---|
-| `leo@tend.app` | dono |
+| `leo@tend.app` | dono (e **admin do sistema**) |
 | `ana@tend.app` | admin |
 | `pedro@tend.app` | membro |
 
@@ -165,7 +165,7 @@ curl http://localhost:3000/api/cron/generate-occurrences \
 
 ## Deploy
 
-> **Roteiro completo para o rollout fechado: [DEPLOY.md](DEPLOY.md)** (Supabase, Vercel, allowlist de cadastro, teste de fumaça, operação).
+> **Roteiro completo para o rollout fechado: [DEPLOY.md](DEPLOY.md)** (Supabase + SMTP, Vercel, primeiro admin, teste de fumaça, operação).
 
 1. **Supabase prod:** `supabase login` → `supabase link --project-ref <ref>` → `supabase db push`. Pegar as 3 chaves em *Project Settings → API*. Em *Auth → Email*, desativar "Confirm email" (ou configurar SMTP) enquanto não há envio de e-mail.
 2. **Vercel:** importar o repositório, configurar `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `NEXT_PUBLIC_APP_URL`. Deploy.
@@ -199,6 +199,7 @@ curl http://localhost:3000/api/cron/generate-occurrences \
 - **Dashboard da casa**: tarefas concluídas por pessoa (hoje/semana/sempre)
 - **Realtime**: listas e ranking atualizam ao vivo
 - **PWA** instalável (manifest, ícones, service worker, dica de instalação iOS)
+- **Acesso controlado:** cadastro com código de 6 dígitos por e-mail + aprovação do admin (`/admin`); pendentes não acessam dados (RLS)
 - **Tema escuro** (Automático / Claro / Escuro em Perfil → Aparência), sem flash na carga
 - **Concluir com desfazer** (otimista; reverte pontos) e **sheet arrastável** para nova tarefa
 </content>

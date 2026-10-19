@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getAccess } from "@/lib/access";
 import { BottomNav } from "@/components/bottom-nav";
 import { ToastProvider } from "@/components/toast";
 import { InstallPrompt } from "@/components/install-prompt";
@@ -17,6 +18,10 @@ export default async function AppLayout({
   } = await supabase.auth.getUser();
 
   if (!user) redirect("/login");
+
+  // acesso só após aprovação do admin (o banco também bloqueia; isto é a UX)
+  const access = await getAccess(supabase);
+  if (access?.status !== "approved") redirect("/pending");
 
   return (
     <ToastProvider>
