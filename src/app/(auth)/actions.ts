@@ -29,6 +29,29 @@ async function rememberEmail(email: string) {
   });
 }
 
+/**
+ * Traduz erros do Supabase Auth. Resposta 5xx/sem corpo JSON vira a mensagem "{}"
+ * no SDK; em geral é falha de envio do e-mail (SMTP). O motivo real vai para o log
+ * (sem e-mail/senha) e o usuário vê algo acionável.
+ */
+function authErrorMessage(error: { message: string; status?: number; code?: string; name?: string }) {
+  console.error("[auth]", error.name, error.status, error.code, error.message);
+  if (error.code === "over_email_send_rate_limit" || error.status === 429) {
+    return "Muitas tentativas. Aguarde alguns minutos e tente de novo.";
+  }
+  if (error.code === "user_already_exists" || error.code === "email_exists") {
+    return "Este e-mail já tem cadastro. Entre com a sua senha.";
+  }
+  if (
+    (error.status ?? 0) >= 500 ||
+    error.message.trim() === "{}" ||
+    /sending|smtp|email/i.test(error.message)
+  ) {
+    return "Não conseguimos enviar o e-mail de confirmação agora. Tente de novo em alguns instantes.";
+  }
+  return error.message;
+}
+
 export async function signUp(_prev: unknown, formData: FormData) {
   const raw = {
     name: formData.get("name"),
@@ -50,7 +73,7 @@ export async function signUp(_prev: unknown, formData: FormData) {
     },
   });
 
-  if (error) return { error: error.message };
+  if (error) return { error: authErrorMessage(error) };
 
   // com "Confirm email" ligado o Supabase envia o código de 6 dígitos
   await rememberEmail(parsed.data.email);
@@ -122,6 +145,6 @@ export async function resendCode() {
 
   const supabase = await createClient();
   const { error } = await supabase.auth.resend({ type: "signup", email });
-  if (error) return { error: "Aguarde um instante antes de pedir outro código." };
+  if (error) return { error: authErrorMessage(error) };
   return { ok: "Enviamos um novo código." };
 }
