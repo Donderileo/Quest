@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
-import { startOfWeek, isToday, parseISO } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import { HouseDashboard, type PersonStats } from "./house-dashboard";
+import { isoInTz, startOfDayInstant, todayISO, weekStartISO } from "@/lib/tz";
 
 export default async function DashboardPage({
   params,
@@ -29,7 +29,8 @@ export default async function DashboardPage({
         .eq("status", "done")
     : { data: [] };
 
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const today = todayISO();
+  const weekStart = startOfDayInstant(weekStartISO(today));
 
   // inicializa stats por pessoa
   const stats = new Map<string, PersonStats>();
@@ -45,14 +46,14 @@ export default async function DashboardPage({
     if (!o.completed_by) continue;
     const s = stats.get(o.completed_by);
     if (!s) continue;
-    const when = o.completed_at ? parseISO(o.completed_at) : null;
+    const when = o.completed_at ? new Date(o.completed_at) : null;
     s.all += 1;
     s.points += o.points_awarded ?? 0;
     if (when && when >= weekStart) {
       s.week += 1;
       totalWeek += 1;
     }
-    if (when && isToday(when)) {
+    if (when && isoInTz(when) === today) {
       s.today += 1;
       totalToday += 1;
     }

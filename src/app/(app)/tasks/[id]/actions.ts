@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { generateOccurrencesForTask } from "@/lib/occurrences";
+import { todayISO } from "@/lib/tz";
 
 const taskSchema = z.object({
   taskId: z.string().min(1),
@@ -70,7 +71,7 @@ export async function updateTask(_prev: unknown, formData: FormData) {
   }
 
   // regenera ocorrências futuras: apaga as pendentes a partir de hoje e recria
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayISO();
   const service = createServiceClient();
   await service
     .from("task_occurrences")

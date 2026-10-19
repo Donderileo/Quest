@@ -157,6 +157,7 @@ curl http://localhost:3000/api/cron/generate-occurrences \
 | `SUPABASE_SERVICE_ROLE_KEY` | **server-only**; ignora RLS (cron/geração) |
 | `CRON_SECRET` | protege o endpoint do cron |
 | `NEXT_PUBLIC_APP_URL` | base p/ links de convite |
+| `APP_TIMEZONE` | fuso do calendário (padrão `America/Sao_Paulo`); "hoje", semana e ocorrências usam este fuso, não o UTC do servidor |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | Web Push (adiado) |
 | `RESEND_API_KEY` / `RESEND_FROM` | e-mail transacional (adiado) |
 

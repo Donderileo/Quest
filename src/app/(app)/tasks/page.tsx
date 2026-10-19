@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
-import { format, isToday, isTomorrow, parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { createClient } from "@/lib/supabase/server";
 import { TaskCard } from "@/components/task-card";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
+import { addDaysISO, todayISO } from "@/lib/tz";
 
 type Occ = {
   id: string;
@@ -14,9 +15,9 @@ type Occ = {
 };
 
 function bucketOf(dateStr: string): string {
-  const d = parseISO(dateStr);
-  if (isToday(d)) return "Hoje";
-  if (isTomorrow(d)) return "Amanhã";
+  const today = todayISO();
+  if (dateStr === today) return "Hoje";
+  if (dateStr === addDaysISO(today, 1)) return "Amanhã";
   return "Em breve";
 }
 
@@ -28,7 +29,7 @@ export default async function TasksPage() {
 
   if (!user) redirect("/login");
 
-  const today = format(new Date(), "yyyy-MM-dd");
+  const today = todayISO();
 
   const { data: occurrences } = await supabase
     .from("task_occurrences")

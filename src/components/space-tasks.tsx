@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { RotateCcw } from "lucide-react";
-import { format, isToday, isTomorrow, parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
+import { addDaysISO } from "@/lib/tz";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { Avatar } from "./ui/avatar";
@@ -36,10 +37,10 @@ type Occurrence = {
 
 type Tab = "hoje" | "semana" | "tudo";
 
-function dayLabel(dateStr: string): string {
+function dayLabel(dateStr: string, today: string): string {
   const d = parseISO(dateStr);
-  if (isToday(d)) return `Hoje · ${format(d, "d MMM", { locale: ptBR })}`;
-  if (isTomorrow(d)) return `Amanhã · ${format(d, "d MMM", { locale: ptBR })}`;
+  if (dateStr === today) return `Hoje · ${format(d, "d MMM", { locale: ptBR })}`;
+  if (dateStr === addDaysISO(today, 1)) return `Amanhã · ${format(d, "d MMM", { locale: ptBR })}`;
   return format(d, "EEEE · d MMM", { locale: ptBR });
 }
 
@@ -147,7 +148,7 @@ export function SpaceTasks({
           <div className="space-y-5">
             {days.map((day) => (
               <div key={day} className="space-y-[9px]">
-                <h3 className="text-xs font-bold uppercase tracking-wide text-subtle">{dayLabel(day)}</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wide text-subtle">{dayLabel(day, today)}</h3>
                 {byDay.get(day)!.map((o) => (
                   <OccurrenceRow key={o.id} occ={o} gamified={gamified} />
                 ))}

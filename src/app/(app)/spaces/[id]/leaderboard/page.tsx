@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
-import { startOfWeek } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import { Leaderboard, type RankEntry, type Activity } from "./leaderboard";
+import { startOfDayInstant, todayISO, weekStartISO } from "@/lib/tz";
 
 export default async function LeaderboardPage({
   params,
@@ -20,7 +20,7 @@ export default async function LeaderboardPage({
   if (!space) notFound();
   if (space.mode !== "gamified") redirect(`/spaces/${id}`);
 
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString();
+  const weekStart = startOfDayInstant(weekStartISO(todayISO())).toISOString();
 
   const [{ data: allTime }, { data: members }, { data: doneThisWeek }, { data: recent }] =
     await Promise.all([

@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { format } from "date-fns";
 import { BarChart3, ChevronRight, Plus, UserPlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { buttonVariants } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { HomeSwitcher } from "@/components/home-switcher";
 import { cn } from "@/lib/utils";
+import { todayISO } from "@/lib/tz";
 
 const SPACE_ICONS: Record<string, string> = {
   kitchen: "🍳", bathroom: "🚿", living: "🛋️",
@@ -25,7 +25,7 @@ export default async function HomePage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
-  const today = format(new Date(), "yyyy-MM-dd");
+  const today = todayISO();
   const {
     data: { user },
   } = await supabase.auth.getUser();

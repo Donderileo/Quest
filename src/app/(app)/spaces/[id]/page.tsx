@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight, Plus, Settings, Trophy } from "lucide-react";
-import { format, addDays } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar } from "@/components/ui/avatar";
 import { SpaceTasks } from "@/components/space-tasks";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
 import { cn } from "@/lib/utils";
+import { addDaysISO, todayISO } from "@/lib/tz";
 
 const SPACE_ICONS: Record<string, string> = {
   kitchen: "🍳", bathroom: "🚿", living: "🛋️",
@@ -25,8 +25,8 @@ export default async function SpacePage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
-  const today = format(new Date(), "yyyy-MM-dd");
-  const weekEnd = format(addDays(new Date(), 6), "yyyy-MM-dd");
+  const today = todayISO();
+  const weekEnd = addDaysISO(today, 6);
 
   const [{ data: space }, { data: tasks }, { data: occurrences }, { data: points }, { data: spaceMembers }] =
     await Promise.all([

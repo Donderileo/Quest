@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { generateOccurrencesForTask } from "@/lib/occurrences";
+import { todayISO } from "@/lib/tz";
 
 const taskSchema = z.object({
   spaceId: z.string().min(1),
@@ -16,7 +17,7 @@ const taskSchema = z.object({
   assignmentType: z.enum(["fixed", "rotation"]),
   assigneeId: z.string().min(1).optional(),
   points: z.coerce.number().int().min(0).default(0),
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).default(() => new Date().toISOString().slice(0, 10)),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).default(() => todayISO()),
 });
 
 export async function createTask(_prev: unknown, formData: FormData) {

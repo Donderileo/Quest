@@ -75,6 +75,12 @@ Data de referência: outubro/2026. Autor do produto: Leo (donderileo@gmail.com).
 - **Implementação:** `generateOccurrencesForTask()` em `src/lib/occurrences.ts`, usada pelo cron e pelas actions. Upsert idempotente com `onConflict (task_id, due_date)`. Usa service role (INSERT em `task_occurrences` é restrito por RLS).
 - **Edição:** apaga ocorrências **futuras pendentes** e recria; preserva as concluídas (histórico).
 
+### 2.4b Datas sempre no fuso do app (`src/lib/tz.ts`)
+- **Decisão:** nenhum `new Date()` para datas de calendário; usar `todayISO()`, `addDaysISO`, `weekStartISO`, `startOfDayInstant` (fuso `APP_TIMEZONE`, padrão America/Sao_Paulo).
+- **Por quê:** o servidor roda em UTC; das 21h às 00h em Brasília ele já está no dia seguinte e "hoje", semana e ocorrências saíam erradas.
+- **Rodízio:** a posição na fila é (ocorrências antes da janela) + índice, não a contagem total — rodar a geração duas vezes não desloca ninguém.
+- **Cron** e actions compartilham `generateOccurrences()` (consultas em lote, upsert por tarefa).
+
 ### 2.5 Realtime via router.refresh()
 - **Decisão:** componente client `RealtimeRefresh` assina `postgres_changes` nas tabelas (`task_occurrences`, `space_member_points`, `tasks`) e chama `router.refresh()` ao receber evento.
 - **Por quê:** o refetch acontece no **servidor**, sob RLS — o navegador só é avisado "algo mudou". Sem vazamento; pior caso é um refresh desnecessário.
