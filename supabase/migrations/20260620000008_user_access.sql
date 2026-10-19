@@ -1,4 +1,8 @@
 -- Substitui a allowlist da migration 7 (já aplicada em produção) pela aprovação por admin.
+-- Re-executável: uma versão anterior desta tabela já foi aplicada em produção (sem dados reais).
+drop trigger if exists on_auth_user_created_access on auth.users;
+drop table if exists public.user_access cascade;
+
 drop trigger if exists trg_beta_allowlist on auth.users;
 drop function if exists public.enforce_beta_allowlist();
 drop table if exists public.beta_allowlist;
