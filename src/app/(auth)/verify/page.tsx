@@ -15,7 +15,7 @@ export default function VerifyPage() {
       <div className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight">Confirme seu e-mail</h1>
         <p className="text-sm text-muted-foreground">
-          Enviamos um código de 6 dígitos para o seu e-mail. Digite-o abaixo.
+          Enviamos um código numérico para o seu e-mail. Digite-o abaixo.
         </p>
       </div>
 
@@ -25,9 +25,9 @@ export default function VerifyPage() {
             name="code"
             inputMode="numeric"
             autoComplete="one-time-code"
-            pattern="[0-9 ]{6,7}"
-            maxLength={7}
-            placeholder="000000"
+            pattern="[0-9 ]{6,9}"
+            maxLength={9}
+            placeholder="00000000"
             className="text-center text-2xl font-bold tracking-[0.4em]"
             required
             autoFocus

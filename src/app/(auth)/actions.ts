@@ -123,7 +123,7 @@ export async function signOut() {
   redirect("/login");
 }
 
-const codeSchema = z.object({ code: z.string().regex(/^\d{6}$/, "Digite os 6 dígitos") });
+const codeSchema = z.object({ code: z.string().regex(/^\d{6,8}$/, "Digite o código recebido por e-mail") });
 
 export async function verifyCode(_prev: unknown, formData: FormData) {
   const parsed = codeSchema.safeParse({ code: String(formData.get("code") ?? "").replace(/\s/g, "") });
