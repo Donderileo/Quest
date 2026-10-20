@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth";
 import { EditSpaceForm } from "./edit-space-form";
 
 export default async function EditSpacePage({
@@ -18,12 +19,14 @@ export default async function EditSpacePage({
 
   if (!space) notFound();
 
-  const [{ data: homeMembers }, { data: spaceMembers }] = await Promise.all([
+  const user = await getCurrentUser();
+  const [{ data: homeMembers }, { data: spaceMembers }, { data: me }] = await Promise.all([
     supabase
       .from("home_members")
       .select("profiles(id, name, avatar_url)")
       .eq("home_id", space.home_id),
     supabase.from("space_members").select("user_id").eq("space_id", id),
+    supabase.from("home_members").select("role").eq("home_id", space.home_id).eq("user_id", user?.id ?? "").maybeSingle(),
   ]);
 
   const members =
@@ -38,6 +41,7 @@ export default async function EditSpacePage({
       space={space}
       members={members}
       initialMemberIds={memberIds}
+      canDelete={me?.role === "owner" || me?.role === "admin"}
     />
   );
 }

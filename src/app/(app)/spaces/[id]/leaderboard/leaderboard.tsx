@@ -6,11 +6,7 @@ import { ChevronRight, Trophy } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
 import { cn } from "@/lib/utils";
-
-const SPACE_ICONS: Record<string, string> = {
-  kitchen: "🍳", bathroom: "🚿", living: "🛋️",
-  bedroom: "🛏️", garden: "🌿", garage: "🚗",
-};
+import { spaceEmoji } from "@/lib/space-icon";
 
 export type RankEntry = { name: string; avatar_url: string | null; points: number };
 export type Activity = { name: string; avatar_url: string | null; title: string; points: number };
@@ -54,7 +50,7 @@ export function Leaderboard({
             <div className="text-[10.5px] font-bold uppercase tracking-wide text-muted-foreground">{homeName}</div>
           )}
           <div className="flex items-center justify-center gap-1.5 text-[17px] font-extrabold tracking-tight">
-            <span className="text-lg">{SPACE_ICONS[icon ?? ""] ?? "🏠"}</span>
+            <span className="text-lg">{spaceEmoji(icon)}</span>
             {spaceName}
           </div>
         </div>

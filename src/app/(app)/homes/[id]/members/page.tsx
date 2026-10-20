@@ -3,11 +3,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar } from "@/components/ui/avatar";
-
-const SPACE_DOT: Record<string, string> = {
-  kitchen: "#c07a4f", bathroom: "#6d7fa8", living: "#a87faa",
-  bedroom: "#c0913f", garden: "#4a7c59", garage: "#7d847e",
-};
+import { spaceDot } from "@/lib/space-icon";
 
 export default async function MembersPage({
   params,
@@ -97,7 +93,7 @@ export default async function MembersPage({
                     >
                       <span
                         className="inline-block size-[7px] rounded-sm"
-                        style={{ backgroundColor: SPACE_DOT[s.icon ?? ""] ?? "var(--subtle)" }}
+                        style={{ backgroundColor: spaceDot(s.icon) }}
                       />
                       {s.name}
                     </span>

@@ -8,15 +8,7 @@ import { createSpace } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
-
-const ICONS = [
-  { value: "kitchen", emoji: "🍳", label: "Cozinha" },
-  { value: "bathroom", emoji: "🚿", label: "Banheiro" },
-  { value: "living", emoji: "🛋️", label: "Sala" },
-  { value: "bedroom", emoji: "🛏️", label: "Quarto" },
-  { value: "garden", emoji: "🌿", label: "Quintal" },
-  { value: "garage", emoji: "🚗", label: "Garagem" },
-];
+import { EmojiField } from "@/components/emoji-field";
 
 export default function NewSpacePage() {
   const { id: homeId } = useParams<{ id: string }>();
@@ -38,25 +30,8 @@ export default function NewSpacePage() {
           <Input name="name" placeholder="ex: Cozinha" autoFocus required />
         </FormField>
 
-        <FormField label="Ícone">
-          <div className="grid grid-cols-3 gap-2">
-            {ICONS.map(({ value, emoji, label }) => (
-              <label
-                key={value}
-                className="flex cursor-pointer flex-col items-center gap-1 rounded-xl border border-border bg-card p-3 text-center has-[:checked]:border-primary has-[:checked]:bg-accent"
-              >
-                <input
-                  type="radio"
-                  name="icon"
-                  value={value}
-                  className="sr-only"
-                  defaultChecked={value === "kitchen"}
-                />
-                <span className="text-2xl">{emoji}</span>
-                <span className="text-xs text-muted-foreground">{label}</span>
-              </label>
-            ))}
-          </div>
+        <FormField label="Ícone (qualquer emoji)">
+          <EmojiField name="icon" defaultValue="🏠" />
         </FormField>
 
         <FormField label="Modo">

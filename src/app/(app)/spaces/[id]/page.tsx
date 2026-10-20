@@ -7,16 +7,7 @@ import { SpaceTasks } from "@/components/space-tasks";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
 import { cn } from "@/lib/utils";
 import { addDaysISO, todayISO } from "@/lib/tz";
-
-const SPACE_ICONS: Record<string, string> = {
-  kitchen: "🍳", bathroom: "🚿", living: "🛋️",
-  bedroom: "🛏️", garden: "🌿", garage: "🚗",
-};
-
-const SPACE_TINT: Record<string, string> = {
-  kitchen: "#f3e7df", bathroom: "#e2e9f1", living: "#efe7f3",
-  bedroom: "#f1ece2", garden: "#e6efe7", garage: "#e8eae6",
-};
+import { spaceEmoji, spaceTint } from "@/lib/space-icon";
 
 export default async function SpacePage({
   params,
@@ -68,7 +59,7 @@ export default async function SpacePage({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ?.map((sm) => (sm.profiles as any) as { name: string; avatar_url: string | null })
       .filter(Boolean) ?? [];
-  const tint = SPACE_TINT[space.icon ?? ""] ?? "#e8eae6";
+  const tint = spaceTint(space.icon);
 
   return (
     <div className="space-y-6 px-[22px] py-4">
@@ -97,7 +88,7 @@ export default async function SpacePage({
           className="flex size-[50px] shrink-0 items-center justify-center rounded-[15px] text-2xl"
           style={{ backgroundColor: `color-mix(in oklab, ${tint} var(--tint-strength), var(--card))` }}
         >
-          {SPACE_ICONS[space.icon ?? ""] ?? "🏠"}
+          {spaceEmoji(space.icon)}
         </div>
         <div className="min-w-0">
           {homeName && (

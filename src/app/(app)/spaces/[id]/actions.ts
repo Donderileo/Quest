@@ -4,12 +4,12 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { firstEmoji } from "@/lib/space-icon";
+import { getCurrentUser } from "@/lib/auth";
 
 export async function completeOccurrence(occurrenceId: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) return;
 
   await supabase
@@ -42,7 +42,7 @@ export async function updateSpace(_prev: unknown, formData: FormData) {
     .from("spaces")
     .update({
       name: parsed.data.name,
-      icon: parsed.data.icon ?? null,
+      icon: firstEmoji(parsed.data.icon),
       mode: parsed.data.mode,
     })
     .eq("id", parsed.data.spaceId);
@@ -110,16 +110,16 @@ export async function updateSpace(_prev: unknown, formData: FormData) {
 
 export async function deleteSpace(spaceId: string, homeId: string) {
   const supabase = await createClient();
-  const { error } = await supabase.from("spaces").delete().eq("id", spaceId);
+  const { data, error } = await supabase.from("spaces").delete().eq("id", spaceId).select("id");
   if (error) return { error: error.message };
+  // a RLS não dá erro quando bloqueia: 0 linhas afetadas = sem permissão (só owner/admin excluem)
+  if (!data?.length) return { error: "Só o dono ou admin da casa pode excluir ambientes." };
   redirect(`/homes/${homeId}`);
 }
 
 export async function uncompleteOccurrence(occurrenceId: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) return;
 
   // o trigger limpa completed_* e estorna os pontos

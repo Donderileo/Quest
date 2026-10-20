@@ -5,16 +5,8 @@ import Link from "next/link";
 import { Check, Trash2 } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { EmojiField } from "@/components/emoji-field";
 import { updateSpace, deleteSpace } from "../actions";
-
-const ICONS = [
-  { value: "kitchen", emoji: "🍳", label: "Cozinha" },
-  { value: "bathroom", emoji: "🚿", label: "Banheiro" },
-  { value: "living", emoji: "🛋️", label: "Sala" },
-  { value: "bedroom", emoji: "🛏️", label: "Quarto" },
-  { value: "garden", emoji: "🌿", label: "Quintal" },
-  { value: "garage", emoji: "🚗", label: "Garagem" },
-];
 
 type Member = { id: string; name: string; avatar_url: string | null };
 type Space = { id: string; name: string; icon: string | null; mode: string; home_id: string };
@@ -23,13 +15,14 @@ export function EditSpaceForm({
   space,
   members,
   initialMemberIds,
+  canDelete,
 }: {
   space: Space;
   members: Member[];
   initialMemberIds: string[];
+  canDelete: boolean;
 }) {
   const [state, action, pending] = useActionState(updateSpace, null);
-  const [icon, setIcon] = useState(space.icon ?? "kitchen");
   const [mode, setMode] = useState<"simple" | "gamified">(space.mode === "gamified" ? "gamified" : "simple");
   const [selected, setSelected] = useState<Set<string>>(new Set(initialMemberIds));
   const [deleting, startDelete] = useTransition();
@@ -64,7 +57,6 @@ export function EditSpaceForm({
 
       <div className="space-y-5 px-[22px] pb-8 pt-1">
         <input type="hidden" name="spaceId" value={space.id} />
-        <input type="hidden" name="icon" value={icon} />
         <input type="hidden" name="mode" value={mode} />
         {[...selected].map((id) => (
           <input key={id} type="hidden" name="memberIds" value={id} />
@@ -83,23 +75,8 @@ export function EditSpaceForm({
 
         {/* ícone */}
         <div>
-          <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-subtle">Ícone</div>
-          <div className="grid grid-cols-3 gap-2">
-            {ICONS.map(({ value, emoji, label }) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setIcon(value)}
-                className={cn(
-                  "flex flex-col items-center gap-1 rounded-xl bg-card p-3 shadow-[0_2px_7px_-3px_rgba(40,45,40,.07)] transition-colors",
-                  icon === value && "ring-2 ring-primary",
-                )}
-              >
-                <span className="text-2xl">{emoji}</span>
-                <span className="text-xs font-semibold text-muted-foreground">{label}</span>
-              </button>
-            ))}
-          </div>
+          <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-subtle">Ícone (qualquer emoji)</div>
+          <EmojiField name="icon" defaultValue={space.icon} />
         </div>
 
         {/* modo */}
@@ -161,16 +138,20 @@ export function EditSpaceForm({
 
         {state?.error && <p className="text-sm font-medium text-destructive">{state.error}</p>}
 
-        {/* excluir */}
-        <button
-          type="button"
-          onClick={handleDelete}
-          disabled={deleting}
-          className="flex h-[50px] w-full items-center justify-center gap-2 rounded-[15px] border-[1.5px] border-destructive/30 text-[15px] font-bold text-destructive disabled:opacity-50"
-        >
-          <Trash2 className="size-[18px]" />
-          {deleting ? "Excluindo…" : "Excluir ambiente"}
-        </button>
+        {canDelete && (
+          <>
+          {/* excluir */}
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="flex h-[50px] w-full items-center justify-center gap-2 rounded-[15px] border-[1.5px] border-destructive/30 text-[15px] font-bold text-destructive disabled:opacity-50"
+          >
+            <Trash2 className="size-[18px]" />
+            {deleting ? "Excluindo…" : "Excluir ambiente"}
+          </button>
+          </>
+        )}
       </div>
     </form>
   );

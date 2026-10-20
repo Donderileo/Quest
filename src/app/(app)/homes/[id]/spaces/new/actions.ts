@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth";
+import { firstEmoji } from "@/lib/space-icon";
 
 const spaceSchema = z.object({
   homeId: z.string().min(1),
@@ -22,16 +24,14 @@ export async function createSpace(_prev: unknown, formData: FormData) {
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   const { data, error } = await supabase
     .from("spaces")
     .insert({
       home_id: parsed.data.homeId,
       name: parsed.data.name,
-      icon: parsed.data.icon ?? null,
+      icon: firstEmoji(parsed.data.icon),
       mode: parsed.data.mode,
     })
     .select("id")
