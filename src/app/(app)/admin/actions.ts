@@ -2,8 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import { getAccess } from "@/lib/access";
+import { getCurrentUser } from "@/lib/auth";
 
 const schema = z.object({
   userId: z.string().min(1),
@@ -21,11 +22,8 @@ export async function setAccessStatus(formData: FormData) {
   });
   if (!parsed.success) return;
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const access = user ? await getAccess(supabase) : null;
+  const user = await getCurrentUser();
+  const access = user ? await getAccess() : null;
   if (!user || access?.status !== "approved" || !access.isAdmin) return;
 
   const { userId, status } = parsed.data;

@@ -201,5 +201,7 @@ curl http://localhost:3000/api/cron/generate-occurrences \
 - **PWA** instalável (manifest, ícones, service worker, dica de instalação iOS)
 - **Acesso controlado:** cadastro com código de 6 dígitos por e-mail + aprovação do admin (`/admin`); pendentes não acessam dados (RLS)
 - **Tema escuro** (Automático / Claro / Escuro em Perfil → Aparência), sem flash na carga
+- **Permissões:** qualquer membro cria/edita ambientes e tarefas; só dono/admin excluem ambiente, renomeiam a casa e geram novo código; só o dono exclui a casa (tela **Gerenciar casa**)
+- **Ícone de ambiente = qualquer emoji** (teclado do aparelho + sugestões)
 - **Concluir com desfazer** (otimista; reverte pontos) e **sheet arrastável** para nova tarefa
 </content>

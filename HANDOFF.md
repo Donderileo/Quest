@@ -90,6 +90,20 @@ Data de referência: outubro/2026. Autor do produto: Leo (donderileo@gmail.com).
 - **Pendente:** tela `/pending` faz `router.refresh()` a cada 8 s e avança sozinha quando aprovado. Sem e-mail de "você foi liberado" (futuro).
 - **MFA do admin e CAPTCHA no cadastro:** adiados (ver DEPLOY.md seção 6).
 
+### 2.4d Permissões de membro e gestão da casa (migration 9)
+- **Decisão:** quem entra por convite pode organizar a casa — criar/editar ambientes, quem participa de cada um, criar/editar/excluir tarefas e rodízio. **Só owner/admin:** excluir ambiente, renomear casa, novo código de convite. **Só owner:** excluir casa. Dono não "sai".
+- **`homes`: só `name` é atualizável** (grant por coluna). Sem isso um admin trocaria `owner_id` e viraria dono. Novo código via `regenerate_invite_code()`; sair via `leave_home()` (limpa ambientes, tarefas fixas, rodízio e ocorrências pendentes).
+- **space_members:** só dá para adicionar quem é membro da mesma casa (checado na policy).
+- **Armadilha:** RLS que bloqueia `update/delete` devolve **0 linhas sem erro**. As actions usam `.select()` e tratam "0 linhas" como "sem permissão".
+- **Ícone = emoji livre** (`src/lib/space-icon.ts`): as chaves antigas (kitchen…) continuam entendidas; a migration converte as existentes.
+
+### 2.4e Desempenho
+- `getClaims()` (verificação local do JWT) no proxy e em `getCurrentUser()` (cache por requisição) no lugar de `getUser()` em proxy + layout + página; `getAccess()` também em cache.
+- `RealtimeRefresh` agrupa eventos (350 ms) e não atualiza com a aba em segundo plano.
+- `staleTimes.dynamic = 20` s: navegar entre abas reaproveita a página; mutações e realtime invalidam.
+- Funções da Vercel na mesma região do banco (`iad1`, Supabase em us-east-1).
+- Medido localmente (modo produção): páginas de 177–246 ms para 19–59 ms.
+
 ### 2.5 Realtime via router.refresh()
 - **Decisão:** componente client `RealtimeRefresh` assina `postgres_changes` nas tabelas (`task_occurrences`, `space_member_points`, `tasks`) e chama `router.refresh()` ao receber evento.
 - **Por quê:** o refetch acontece no **servidor**, sob RLS — o navegador só é avisado "algo mudou". Sem vazamento; pior caso é um refresh desnecessário.

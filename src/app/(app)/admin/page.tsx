@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import { getAccess, type AccessStatus } from "@/lib/access";
 import { Button } from "@/components/ui/button";
 import { setAccessStatus } from "./actions";
@@ -15,8 +15,7 @@ const SECTIONS: { status: AccessStatus; title: string; empty: string }[] = [
 ];
 
 export default async function AdminPage() {
-  const supabase = await createClient();
-  const access = await getAccess(supabase);
+  const access = await getAccess();
   // 404 (e não 403) para não revelar que a rota existe
   if (access?.status !== "approved" || !access.isAdmin) notFound();
 

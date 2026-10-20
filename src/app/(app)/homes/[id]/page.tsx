@@ -1,22 +1,14 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { BarChart3, ChevronRight, Plus, UserPlus } from "lucide-react";
+import { BarChart3, ChevronRight, Plus, Settings, UserPlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { buttonVariants } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { HomeSwitcher } from "@/components/home-switcher";
 import { cn } from "@/lib/utils";
 import { todayISO } from "@/lib/tz";
-
-const SPACE_ICONS: Record<string, string> = {
-  kitchen: "🍳", bathroom: "🚿", living: "🛋️",
-  bedroom: "🛏️", garden: "🌿", garage: "🚗",
-};
-
-const SPACE_TINT: Record<string, string> = {
-  kitchen: "#f3e7df", bathroom: "#e2e9f1", living: "#efe7f3",
-  bedroom: "#f1ece2", garden: "#e6efe7", garage: "#e8eae6",
-};
+import { spaceEmoji, spaceTint } from "@/lib/space-icon";
+import { getCurrentUser } from "@/lib/auth";
 
 export default async function HomePage({
   params,
@@ -26,9 +18,7 @@ export default async function HomePage({
   const { id } = await params;
   const supabase = await createClient();
   const today = todayISO();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   const [{ data: home }, { data: members }, { data: spaces }, { data: myHomes }] =
     await Promise.all([
@@ -106,6 +96,13 @@ export default async function HomePage({
             {memberCount} {memberCount === 1 ? "membro" : "membros"} · {spaceIds.length} {spaceIds.length === 1 ? "ambiente" : "ambientes"}
           </p>
         </div>
+        <Link
+          href={`/homes/${id}/edit`}
+          aria-label="Gerenciar casa"
+          className="press flex size-10 shrink-0 items-center justify-center rounded-xl bg-card shadow-[0_2px_6px_-2px_rgba(0,0,0,.12)]"
+        >
+          <Settings className="size-5" />
+        </Link>
       </div>
 
       {/* ações: convidar + métricas */}
@@ -157,7 +154,7 @@ export default async function HomePage({
               const mem = membersBySpace.get(space.id) ?? [];
               const tCount = taskCount.get(space.id) ?? 0;
               const due = dueCount.get(space.id) ?? 0;
-              const tint = SPACE_TINT[space.icon ?? ""] ?? "#e8eae6";
+              const tint = spaceTint(space.icon);
               return (
                 <Link
                   key={space.id}
@@ -169,7 +166,7 @@ export default async function HomePage({
                       className="flex size-[46px] shrink-0 items-center justify-center rounded-[13px] text-2xl"
                       style={{ backgroundColor: `color-mix(in oklab, ${tint} var(--tint-strength), var(--card))` }}
                     >
-                      {SPACE_ICONS[space.icon ?? ""] ?? "🏠"}
+                      {spaceEmoji(space.icon)}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">

@@ -29,9 +29,10 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims: verifica o JWT localmente (chaves assimétricas) e renova a sessão se expirou,
+  // sem uma ida ao servidor de Auth a cada navegação.
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims?.sub ? { id: data.claims.sub } : null;
 
   const { pathname } = request.nextUrl;
   const isPublic =

@@ -6,12 +6,11 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { signOut } from "@/app/(auth)/actions";
+import { getCurrentUser } from "@/lib/auth";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) redirect("/login");
 
@@ -21,7 +20,7 @@ export default async function ProfilePage() {
     .eq("id", user.id)
     .single();
 
-  const access = await getAccess(supabase);
+  const access = await getAccess();
   const name = profile?.name ?? user.email ?? "Usuário";
 
   return (

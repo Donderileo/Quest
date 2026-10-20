@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { TaskCard } from "@/components/task-card";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
 import { addDaysISO, todayISO } from "@/lib/tz";
+import { getCurrentUser } from "@/lib/auth";
 
 type Occ = {
   id: string;
@@ -23,9 +24,7 @@ function bucketOf(dateStr: string): string {
 
 export default async function TasksPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) redirect("/login");
 

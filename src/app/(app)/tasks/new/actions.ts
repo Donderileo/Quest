@@ -6,6 +6,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { generateOccurrencesForTask } from "@/lib/occurrences";
 import { todayISO } from "@/lib/tz";
+import { getCurrentUser } from "@/lib/auth";
 
 const taskSchema = z.object({
   spaceId: z.string().min(1),
@@ -39,9 +40,7 @@ export async function createTask(_prev: unknown, formData: FormData) {
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   const { data, error } = await supabase
     .from("tasks")

@@ -1,19 +1,16 @@
 import { redirect } from "next/navigation";
 import { Clock, ShieldOff } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
 import { getAccess } from "@/lib/access";
 import { PendingWatch } from "@/components/pending-watch";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/app/(auth)/actions";
+import { getCurrentUser } from "@/lib/auth";
 
 export default async function PendingPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const access = await getAccess(supabase);
+  const access = await getAccess();
   if (access?.status === "approved") redirect("/homes");
   const blocked = access?.status === "blocked";
 
