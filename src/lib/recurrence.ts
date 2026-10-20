@@ -3,6 +3,7 @@ import {
   eachDayOfInterval,
   format,
   getDay,
+  isAfter,
   isBefore,
   parseISO,
 } from "date-fns";
@@ -13,6 +14,8 @@ export interface RecurrenceConfig {
   type: RecurrenceType;
   /** yyyy-MM-dd — primeira data possível da tarefa */
   startDate: string;
+  /** yyyy-MM-dd — última data possível (inclusiva); sem valor = não termina */
+  endDate?: string | null;
   /** dias da semana 0=domingo..6=sábado (apenas weekly) */
   days?: number[];
   /** intervalo em dias a partir de startDate (apenas custom) */
@@ -27,6 +30,7 @@ export function isDueOn(config: RecurrenceConfig, date: string): boolean {
   const start = parseISO(config.startDate);
 
   if (isBefore(target, start)) return false;
+  if (config.endDate && isAfter(target, parseISO(config.endDate))) return false;
 
   switch (config.type) {
     case "daily":

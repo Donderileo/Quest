@@ -16,6 +16,8 @@ const taskSchema = z.object({
   assignmentType: z.enum(["fixed", "rotation"]),
   assigneeId: z.string().min(1).optional(),
   points: z.coerce.number().int().min(0).default(0),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
 
 export async function updateTask(_prev: unknown, formData: FormData) {
@@ -30,12 +32,17 @@ export async function updateTask(_prev: unknown, formData: FormData) {
     assignmentType: formData.get("assignmentType"),
     assigneeId: formData.get("assigneeId") || undefined,
     points: formData.get("points") || 0,
+    startDate: formData.get("startDate") || undefined,
+    endDate: formData.get("endDate") || undefined,
   });
   if (!parsed.success) return { error: parsed.error.issues[0].message };
+  if (parsed.data.endDate && parsed.data.endDate < parsed.data.startDate) {
+    return { error: "A data de término não pode ser antes do início." };
+  }
 
   const supabase = await createClient();
 
-  // O .select() devolve a linha só se o RLS permitiu (owner/admin da casa).
+  // O .select() devolve a linha só se o RLS permitiu (membro da casa).
   // Sem isso, um update bloqueado pelo RLS retorna 0 linhas SEM erro e o
   // código seguiria usando o service client num taskId de outra casa.
   const { data: updated, error } = await supabase
@@ -48,6 +55,8 @@ export async function updateTask(_prev: unknown, formData: FormData) {
       assignment_type: parsed.data.assignmentType,
       assignee_id: parsed.data.assignmentType === "fixed" ? parsed.data.assigneeId ?? null : null,
       points: parsed.data.points,
+      start_date: parsed.data.startDate,
+      end_date: parsed.data.endDate ?? null,
     })
     .eq("id", parsed.data.taskId)
     .select("id")

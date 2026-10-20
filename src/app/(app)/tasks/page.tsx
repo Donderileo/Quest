@@ -9,6 +9,7 @@ import { getCurrentUser } from "@/lib/auth";
 
 type Occ = {
   id: string;
+  task_id: string;
   due_date: string;
   status: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -32,7 +33,7 @@ export default async function TasksPage() {
 
   const { data: occurrences } = await supabase
     .from("task_occurrences")
-    .select("id, due_date, status, assigned_to, tasks!inner(title, points, spaces!inner(name, mode))")
+    .select("id, task_id, due_date, status, assigned_to, tasks!inner(title, points, spaces!inner(name, mode))")
     .or(`assigned_to.eq.${user.id},assigned_to.is.null`)
     .eq("status", "pending")
     .gte("due_date", today)

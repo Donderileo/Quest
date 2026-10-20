@@ -12,6 +12,11 @@ mudança de comportamento; **PATCH** = correção. A versão fica em `package.js
 4. Se houver migration nova, `npx supabase db push` **antes** do deploy.
 
 ## Não lançado
+- **Data de início e de término** nas tarefas: começo **imediato** (padrão) ou **agendado**, e término opcional.
+  Para "a cada N dias" dá para informar **a última vez** que foi feito (ex.: remédio a cada 30 dias dado em 05/10
+  → próxima em 04/11). A tela mostra a **primeira ocorrência** antes de salvar. Listas mostram "Começa…/Até…/Encerrada".
+- **Editar tarefa** a partir de **Hoje**, **Esta semana** e **Tarefas** (antes só pela aba Tudo, e parecia não dar para editar).
+- Banco: migration 10 (`tasks.end_date`).
 
 ## 0.2.0 — Beta fechado (2026-10-19)
 ### Acesso

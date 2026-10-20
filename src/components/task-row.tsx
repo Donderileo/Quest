@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { todayISO } from "@/lib/tz";
 import { Avatar } from "./ui/avatar";
 import { CheckButton } from "./check-button";
 
@@ -17,6 +20,8 @@ type Task = {
   assignment_type: string;
   assignee_id: string | null;
   points: number;
+  start_date?: string;
+  end_date?: string | null;
 };
 
 function recurrenceLabel(task: Task): string {
@@ -32,7 +37,13 @@ function recurrenceLabel(task: Task): string {
     }
     return "";
   })();
-  return task.assignment_type === "rotation" ? `${base} · Rodízio` : base;
+  const today = todayISO();
+  const short = (iso: string) => format(parseISO(iso), "d MMM", { locale: ptBR });
+  let label = task.assignment_type === "rotation" ? `${base} · Rodízio` : base;
+  if (task.end_date && task.end_date < today) label += " · Encerrada";
+  else if (task.start_date && task.start_date > today) label += ` · Começa ${short(task.start_date)}`;
+  else if (task.end_date) label += ` · Até ${short(task.end_date)}`;
+  return label;
 }
 
 export function TaskRow({

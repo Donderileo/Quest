@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { TaskSchedule } from "@/components/task-schedule";
 
 const DAYS = ["D", "S", "T", "Q", "Q", "S", "S"];
 
@@ -19,6 +20,8 @@ export type TaskFormInitial = {
   assigneeId: string | null;
   rotationOrder: string[];
   points: number;
+  startDate?: string;
+  endDate?: string | null;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -167,6 +170,16 @@ export function TaskForm({
             )}
           </div>
         </div>
+
+        {/* quando começa e termina */}
+        <TaskSchedule
+          recurrence={recurrence}
+          days={selectedDays}
+          interval={interval}
+          initialStart={initial.startDate}
+          initialEnd={initial.endDate}
+          isEdit={!!taskId}
+        />
 
         {/* responsável */}
         <div>

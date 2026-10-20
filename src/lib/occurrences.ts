@@ -11,10 +11,11 @@ type TaskRow = {
   assignment_type: "fixed" | "rotation";
   assignee_id: string | null;
   start_date: string;
+  end_date: string | null;
 };
 
 const TASK_COLS =
-  "id, recurrence_type, recurrence_days, recurrence_interval_days, assignment_type, assignee_id, start_date";
+  "id, recurrence_type, recurrence_days, recurrence_interval_days, assignment_type, assignee_id, start_date, end_date";
 
 const CHUNK = 10;
 
@@ -63,6 +64,7 @@ export async function generateOccurrences(
       {
         type: task.recurrence_type,
         startDate: task.start_date,
+        endDate: task.end_date,
         days: task.recurrence_days ?? [],
         intervalDays: task.recurrence_interval_days ?? undefined,
       },

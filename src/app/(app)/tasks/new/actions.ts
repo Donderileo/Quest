@@ -19,6 +19,7 @@ const taskSchema = z.object({
   assigneeId: z.string().min(1).optional(),
   points: z.coerce.number().int().min(0).default(0),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).default(() => todayISO()),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
 
 export async function createTask(_prev: unknown, formData: FormData) {
@@ -34,10 +35,14 @@ export async function createTask(_prev: unknown, formData: FormData) {
     assignmentType: formData.get("assignmentType"),
     assigneeId: formData.get("assigneeId") || undefined,
     points: formData.get("points") || 0,
-    startDate: formData.get("startDate") ?? undefined,
+    startDate: formData.get("startDate") || undefined,
+    endDate: formData.get("endDate") || undefined,
   });
 
   if (!parsed.success) return { error: parsed.error.issues[0].message };
+  if (parsed.data.endDate && parsed.data.endDate < parsed.data.startDate) {
+    return { error: "A data de término não pode ser antes do início." };
+  }
 
   const supabase = await createClient();
   const user = await getCurrentUser();
@@ -55,6 +60,7 @@ export async function createTask(_prev: unknown, formData: FormData) {
       assignee_id: parsed.data.assignmentType === "fixed" ? parsed.data.assigneeId ?? null : null,
       points: parsed.data.points,
       start_date: parsed.data.startDate,
+      end_date: parsed.data.endDate ?? null,
       created_by: user!.id,
     })
     .select("id, space_id")

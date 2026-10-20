@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { RotateCcw } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { addDaysISO } from "@/lib/tz";
@@ -21,6 +22,8 @@ type Task = {
   assignment_type: string;
   assignee_id: string | null;
   points: number;
+  start_date: string;
+  end_date: string | null;
   assignee: { name: string } | null;
 };
 
@@ -56,14 +59,18 @@ function OccurrenceRow({ occ, gamified }: { occ: Occurrence; gamified: boolean }
     <div className="flex items-center gap-3 rounded-[15px] bg-card p-[14px] shadow-[0_2px_7px_-3px_rgba(40,45,40,.07)]">
       <CheckButton occurrenceId={occ.id} done={done} title={occ.tasks.title} />
 
-      <div className="min-w-0 flex-1">
+      <Link
+        href={`/tasks/${occ.task_id}/edit`}
+        aria-label={`Editar tarefa: ${occ.tasks.title}`}
+        className="min-w-0 flex-1"
+      >
         <p className={cn("truncate font-bold tracking-tight", done && "text-faint line-through")}>
           {occ.tasks.title}
         </p>
         <div className="mt-0.5 text-xs font-semibold text-muted-foreground">
           {doneInfo ?? (occ.assignee ? occ.assignee.name : "Sem responsável")}
         </div>
-      </div>
+      </Link>
 
       <div className="flex shrink-0 items-center gap-2">
         {gamified && occ.tasks.points > 0 && !done && (
