@@ -1,88 +1,68 @@
 import { redirect } from "next/navigation";
-import { format, parseISO } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { createClient } from "@/lib/supabase/server";
-import { TaskCard } from "@/components/task-card";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
+import { TasksBoard, type BoardOccurrence } from "@/components/tasks-board";
 import { addDaysISO, todayISO } from "@/lib/tz";
 import { getCurrentUser } from "@/lib/auth";
 
-type Occ = {
+const DAYS = 7;
+
+type Row = {
   id: string;
   task_id: string;
   due_date: string;
   status: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tasks: any;
+  assigned_to: string | null;
+  assignee: { name: string; avatar_url: string | null } | null;
+  tasks: {
+    title: string;
+    points: number;
+    spaces: { id: string; name: string; icon: string | null; mode: string };
+  };
 };
-
-function bucketOf(dateStr: string): string {
-  const today = todayISO();
-  if (dateStr === today) return "Hoje";
-  if (dateStr === addDaysISO(today, 1)) return "Amanhã";
-  return "Em breve";
-}
 
 export default async function TasksPage() {
   const supabase = await createClient();
   const user = await getCurrentUser();
-
   if (!user) redirect("/login");
 
   const today = todayISO();
+  const days = Array.from({ length: DAYS }, (_, i) => addDaysISO(today, i));
 
-  const { data: occurrences } = await supabase
-    .from("task_occurrences")
-    .select("id, task_id, due_date, status, assigned_to, tasks!inner(title, points, spaces!inner(name, mode))")
-    .or(`assigned_to.eq.${user.id},assigned_to.is.null`)
-    .eq("status", "pending")
-    .gte("due_date", today)
-    .order("due_date", { ascending: true })
-    .limit(50);
+  const [{ count: homes }, { data }] = await Promise.all([
+    supabase.from("home_members").select("home_id", { count: "exact", head: true }).eq("user_id", user.id),
+    supabase
+      .from("task_occurrences")
+      .select(
+        "id, task_id, due_date, status, assigned_to, assignee:profiles!task_occurrences_assigned_to_fkey(name, avatar_url), tasks!inner(title, points, spaces!inner(id, name, icon, mode))",
+      )
+      .gte("due_date", today)
+      .lte("due_date", days[DAYS - 1])
+      .order("due_date", { ascending: true }),
+  ]);
 
-  // agrupa por bucket de data, preservando a ordem (Hoje, Amanhã, Em breve)
-  const order = ["Hoje", "Amanhã", "Em breve"];
-  const groups = new Map<string, Occ[]>();
-  for (const occ of (occurrences as Occ[]) ?? []) {
-    const b = bucketOf(occ.due_date);
-    if (!groups.has(b)) groups.set(b, []);
-    groups.get(b)!.push(occ);
-  }
+  // sem casa ainda → onboarding (criar ou entrar)
+  if (!homes) redirect("/homes");
+
+  const occurrences: BoardOccurrence[] = ((data ?? []) as unknown as Row[]).map((o) => ({
+    id: o.id,
+    taskId: o.task_id,
+    date: o.due_date,
+    done: o.status === "done",
+    assignedTo: o.assigned_to,
+    assignee: o.assignee,
+    title: o.tasks.title,
+    points: o.tasks.points,
+    gamified: o.tasks.spaces.mode === "gamified",
+    spaceId: o.tasks.spaces.id,
+    spaceName: o.tasks.spaces.name,
+    spaceIcon: o.tasks.spaces.icon,
+  }));
 
   return (
-    <div className="space-y-6 px-[22px] py-6">
+    <>
       <RealtimeRefresh tables={["task_occurrences"]} />
-      <h1 className="text-2xl font-extrabold tracking-tight">Minhas tarefas</h1>
-
-      {!occurrences?.length ? (
-        <p className="py-12 text-center text-sm text-muted-foreground">
-          Nenhuma tarefa pendente para você. 🎉
-        </p>
-      ) : (
-        <div className="space-y-6">
-          {order
-            .filter((b) => groups.has(b))
-            .map((bucket) => {
-              const items = groups.get(bucket)!;
-              const label =
-                bucket === "Em breve"
-                  ? bucket
-                  : `${bucket} · ${format(parseISO(items[0].due_date), "EEE d", { locale: ptBR })}`;
-              return (
-                <section key={bucket} className="space-y-[9px]">
-                  <h2 className="mb-2 text-xs font-bold uppercase tracking-wide text-subtle">
-                    {label}
-                  </h2>
-                  {items.map((occ) => {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const gamified = (occ.tasks as any)?.spaces?.mode === "gamified";
-                    return <TaskCard key={occ.id} occurrence={occ} gamified={gamified} />;
-                  })}
-                </section>
-              );
-            })}
-        </div>
-      )}
-    </div>
+      <TasksBoard occurrences={occurrences} meId={user.id} today={today} days={days} />
+    </>
   );
 }

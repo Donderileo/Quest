@@ -28,7 +28,7 @@ export default async function SpacePage({
         .single(),
       supabase
         .from("tasks")
-        .select("id, title, recurrence_type, recurrence_days, recurrence_interval_days, assignment_type, assignee_id, points, start_date, end_date, assignee:profiles!tasks_assignee_id_fkey(name)")
+        .select("id, title, recurrence_type, recurrence_days, recurrence_interval_days, assignment_type, assignee_id, points, start_date, end_date, assignee:profiles!tasks_assignee_id_fkey(name), rotation:task_rotation_queue(position, profiles(name))")
         .eq("space_id", id)
         .is("archived_at", null)
         .order("created_at", { ascending: true }),

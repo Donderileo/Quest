@@ -11,7 +11,7 @@ export default async function PendingPage() {
   if (!user) redirect("/login");
 
   const access = await getAccess();
-  if (access?.status === "approved") redirect("/homes");
+  if (access?.status === "approved") redirect("/tasks");
   const blocked = access?.status === "blocked";
 
   return (

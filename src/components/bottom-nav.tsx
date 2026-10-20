@@ -6,8 +6,8 @@ import { Home, CheckSquare, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
-  { href: "/homes", label: "Dashboard", Icon: Home },
   { href: "/tasks", label: "Tarefas", Icon: CheckSquare },
+  { href: "/homes", label: "Casa", Icon: Home },
   { href: "/profile", label: "Perfil", Icon: User },
 ] as const;
 

@@ -187,3 +187,7 @@ small, .text-xs { letter-spacing: 0.01em; }
 @media (prefers-contrast: more) {
   .material { background: var(--card); border-top-color: var(--foreground); }
 }
+
+/* rolagens horizontais (faixa de dias e páginas) sem barra visível */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

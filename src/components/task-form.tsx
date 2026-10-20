@@ -89,6 +89,11 @@ export function TaskForm({
       </div>
 
       <div className="space-y-5 px-[22px] pb-8 pt-1">
+        {taskId && (
+          <p className="rounded-xl bg-accent px-3.5 py-2.5 text-[13px] font-semibold text-accent-foreground">
+            Mudanças valem para todas as ocorrências de hoje em diante. O que já foi concluído fica no histórico.
+          </p>
+        )}
         <input type="hidden" name="spaceId" value={spaceId} />
         {taskId && <input type="hidden" name="taskId" value={taskId} />}
         <input type="hidden" name="recurrenceType" value={recurrence} />

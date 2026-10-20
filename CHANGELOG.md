@@ -12,6 +12,13 @@ mudança de comportamento; **PATCH** = correção. A versão fica em `package.js
 4. Se houver migration nova, `npx supabase db push` **antes** do deploy.
 
 ## Não lançado
+- **Tarefas é a tela inicial**: mostra as tarefas do dia e, deslizando para o lado (ou tocando na faixa de dias),
+  os próximos 7 dias. **O dia de hoje não some** ao concluir tudo: continua visível com o progresso e "Tudo feito 🎉".
+  Menu agora: Tarefas · Casa · Perfil.
+- **Duas visões** (botão no topo): lista normal e **agrupada por ambiente**, em cards com cabeçalho, as primeiras 3 tarefas
+  e "Mostrar mais N". Filtro **Minhas | Da casa**. A escolha fica salva no aparelho.
+- Aba **Tudo** do ambiente mostra a **tarefa em si** (repetição, responsável ou rodízio, pontos, período), sem check nem
+  "feita por"; aviso de que mudar altera de hoje em diante.
 - **Data de início e de término** nas tarefas: começo **imediato** (padrão) ou **agendado**, e término opcional.
   Para "a cada N dias" dá para informar **a última vez** que foi feito (ex.: remédio a cada 30 dias dado em 05/10
   → próxima em 04/11). A tela mostra a **primeira ocorrência** antes de salvar. Listas mostram "Começa…/Até…/Encerrada".

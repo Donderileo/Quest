@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Tend — tarefas da casa",
     short_name: "Tend",
     description: "Organize as tarefas da casa em conjunto, por ambiente, com rodízio e pontos.",
-    start_url: "/homes",
+    start_url: "/tasks",
     display: "standalone",
     background_color: "#f5f4f0",
     theme_color: "#4a7c59",

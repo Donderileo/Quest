@@ -113,7 +113,7 @@ export async function signIn(_prev: unknown, formData: FormData) {
   const next =
     typeof requested === "string" && /^\/(?![/\\])/.test(requested)
       ? requested
-      : "/homes";
+      : "/tasks";
   redirect(next);
 }
 
@@ -138,7 +138,7 @@ export async function verifyCode(_prev: unknown, formData: FormData) {
   if (error) return { error: "Código inválido ou expirado. Peça um novo." };
 
   jar.delete(VERIFY_COOKIE);
-  redirect("/homes"); // o layout encaminha quem ainda não foi aprovado para /pending
+  redirect("/tasks"); // o layout encaminha quem ainda não foi aprovado para /pending
 }
 
 export async function resendCode() {

@@ -8,24 +8,10 @@ import { addDaysISO } from "@/lib/tz";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { Avatar } from "./ui/avatar";
-import { TaskRow } from "./task-row";
+import { TaskRow, type TaskTemplate } from "./task-row";
 import { CheckButton } from "./check-button";
 
 type Profile = { name: string; avatar_url: string | null } | null;
-
-type Task = {
-  id: string;
-  title: string;
-  recurrence_type: string;
-  recurrence_days: number[];
-  recurrence_interval_days: number | null;
-  assignment_type: string;
-  assignee_id: string | null;
-  points: number;
-  start_date: string;
-  end_date: string | null;
-  assignee: { name: string } | null;
-};
 
 type Occurrence = {
   id: string;
@@ -96,13 +82,12 @@ export function SpaceTasks({
 }: {
   today: string;
   gamified: boolean;
-  tasks: Task[];
+  tasks: TaskTemplate[];
   occurrences: Occurrence[];
 }) {
   const [tab, setTab] = useState<Tab>("hoje");
 
   const todayOccs = occurrences.filter((o) => o.due_date === today);
-  const todayByTask = new Map(todayOccs.map((o) => [o.task_id, o]));
 
   // semana agrupada por dia
   const byDay = new Map<string, Occurrence[]>();
@@ -164,27 +149,20 @@ export function SpaceTasks({
           </div>
         ))}
 
-      {/* TUDO (definições de tarefa, editáveis) */}
-      {tab === "tudo" &&
-        (tasks.length === 0 ? (
-          <p className="py-10 text-center text-sm text-muted-foreground">Nenhuma tarefa cadastrada ainda.</p>
-        ) : (
-          <div className="space-y-[9px]">
-            {tasks.map((task) => {
-              const occ = todayByTask.get(task.id);
-              return (
-                <TaskRow
-                  key={task.id}
-                  task={task}
-                  todayOccurrenceId={occ?.id ?? null}
-                  todayStatus={occ?.status ?? null}
-                  assigneeName={task.assignee?.name ?? null}
-                  gamified={gamified}
-                />
-              );
-            })}
-          </div>
-        ))}
+      {/* TUDO: as tarefas em si (modelos), não as ocorrências do calendário */}
+      {tab === "tudo" && (
+        <div className="space-y-[9px]">
+          <p className="rounded-xl bg-accent px-3.5 py-2.5 text-[13px] font-semibold text-accent-foreground">
+            Estas são as tarefas em si. Mudar uma tarefa altera todas as ocorrências de hoje em diante; o que já foi
+            concluído fica no histórico.
+          </p>
+          {tasks.length === 0 ? (
+            <p className="py-10 text-center text-sm text-muted-foreground">Nenhuma tarefa cadastrada ainda.</p>
+          ) : (
+            tasks.map((task) => <TaskRow key={task.id} task={task} gamified={gamified} />)
+          )}
+        </div>
+      )}
     </section>
   );
 }
