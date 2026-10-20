@@ -492,6 +492,8 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      leave_home: { Args: { h: string }; Returns: undefined }
+      regenerate_invite_code: { Args: { h: string }; Returns: string }
       space_home: { Args: { s: string }; Returns: string }
       task_space: { Args: { t: string }; Returns: string }
     }
