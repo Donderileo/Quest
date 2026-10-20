@@ -12,6 +12,11 @@ mudança de comportamento; **PATCH** = correção. A versão fica em `package.js
 4. Se houver migration nova, `npx supabase db push` **antes** do deploy.
 
 ## Não lançado
+- **Atrasadas:** deslizando para a esquerda a partir de **Hoje** (ou tocando na chip "Atrasadas") aparece uma seção
+  só com as pendências de dias anteriores (últimos 30 dias), mais antigas primeiro, com "Ontem" / "há N dias".
+  O app continua abrindo em Hoje. A chip mostra a contagem e fica laranja quando há pendência.
+- **Robustez:** um erro momentâneo ao consultar o acesso ou as casas não é mais confundido com "sem acesso"/"sem casa"
+  (antes podia levar uma pessoa aprovada para "Aguardando liberação" ou para criar outra casa); agora aparece "Tentar de novo".
 - **Tarefas é a tela inicial**: mostra as tarefas do dia e, deslizando para o lado (ou tocando na faixa de dias),
   os próximos 7 dias. **O dia de hoje não some** ao concluir tudo: continua visível com o progresso e "Tudo feito 🎉".
   Menu agora: Tarefas · Casa · Perfil.

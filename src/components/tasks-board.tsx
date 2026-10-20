@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronUp, LayoutGrid, List } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { differenceInCalendarDays, format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useLocalPref } from "@/lib/use-local-pref";
@@ -33,6 +33,14 @@ const GROUP_PREVIEW = 3;
 
 const weekday = (iso: string) => format(parseISO(iso), "EEE", { locale: ptBR }).replace(".", "");
 
+/** página especial: pendências de dias anteriores, numa seção só */
+const OVERDUE = "overdue";
+
+function lateLabel(date: string, today: string) {
+  const n = differenceInCalendarDays(parseISO(today), parseISO(date));
+  return n <= 1 ? "Ontem" : `há ${n} dias`;
+}
+
 function dayTitle(iso: string, today: string) {
   const long = format(parseISO(iso), "EEEE, d 'de' MMM", { locale: ptBR });
   if (iso === today) return `Hoje · ${long}`;
@@ -48,11 +56,13 @@ function Row({
   showSpace,
   showAssignee,
   flat,
+  late,
 }: {
   occ: BoardOccurrence;
   showSpace: boolean;
   showAssignee: boolean;
   flat?: boolean;
+  late?: string;
 }) {
   return (
     <div
@@ -68,10 +78,16 @@ function Row({
         className="min-w-0 flex-1"
       >
         <p className={cn("truncate font-bold tracking-tight", occ.done && "text-faint line-through")}>{occ.title}</p>
-        {showSpace && (
+        {(showSpace || late) && (
           <div className="mt-0.5 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-            <span>{spaceEmoji(occ.spaceIcon)}</span>
-            <span className="truncate">{occ.spaceName}</span>
+            {showSpace && (
+              <>
+                <span>{spaceEmoji(occ.spaceIcon)}</span>
+                <span className="truncate">{occ.spaceName}</span>
+              </>
+            )}
+            {showSpace && late && <span aria-hidden>·</span>}
+            {late && <span className="shrink-0 text-destructive">{late}</span>}
           </div>
         )}
       </Link>
@@ -92,10 +108,12 @@ function Row({
 
 function GroupCard({
   date,
+  today,
   items,
   showAssignee,
 }: {
   date: string;
+  today: string;
   items: BoardOccurrence[];
   showAssignee: boolean;
 }) {
@@ -124,7 +142,14 @@ function GroupCard({
       </header>
       <div className="divide-y divide-border">
         {visible.map((occ) => (
-          <Row key={occ.id} occ={occ} showSpace={false} showAssignee={showAssignee} flat />
+          <Row
+            key={occ.id}
+            occ={occ}
+            showSpace={false}
+            showAssignee={showAssignee}
+            flat
+            late={date === OVERDUE ? lateLabel(occ.date, today) : undefined}
+          />
         ))}
       </div>
       {rest > 0 && (
@@ -162,9 +187,15 @@ function DayPage({
   view: (typeof VIEWS)[number];
   showAssignee: boolean;
 }) {
-  const sorted = useMemo(() => [...items].sort(byStatus), [items]);
+  const overdue = date === OVERDUE;
+  // atrasadas: mais antigas primeiro; dias normais: pendentes antes das concluídas
+  const sorted = useMemo(
+    () =>
+      [...items].sort(overdue ? (a, b) => a.date.localeCompare(b.date) || byStatus(a, b) : byStatus),
+    [items, overdue],
+  );
   const done = items.filter((i) => i.done).length;
-  const allDone = items.length > 0 && done === items.length;
+  const allDone = !overdue && items.length > 0 && done === items.length;
 
   const groups = useMemo(() => {
     const map = new Map<string, BoardOccurrence[]>();
@@ -176,17 +207,24 @@ function DayPage({
   }, [sorted]);
 
   return (
-    <div className="min-w-full snap-start space-y-3 px-[22px] pb-6" role="group" aria-label={dayTitle(date, today)}>
+    <div
+      className="min-w-full snap-start space-y-3 px-[22px] pb-6"
+      role="group"
+      aria-label={overdue ? "Atrasadas" : dayTitle(date, today)}
+    >
       <div className="space-y-2">
         <div className="flex items-baseline justify-between gap-3">
-          <h2 className="text-[15px] font-extrabold">{dayTitle(date, today)}</h2>
+          <h2 className="text-[15px] font-extrabold">{overdue ? "Atrasadas" : dayTitle(date, today)}</h2>
           {items.length > 0 && (
             <span className="shrink-0 text-xs font-bold text-muted-foreground">
-              {done} de {items.length}
+              {overdue ? `${items.length - done} pendente${items.length - done === 1 ? "" : "s"}` : `${done} de ${items.length}`}
             </span>
           )}
         </div>
-        {items.length > 0 && (
+        {overdue && items.length > 0 && (
+          <p className="text-[13px] text-muted-foreground">Ficaram para trás. Conclua agora para zerar a lista.</p>
+        )}
+        {!overdue && items.length > 0 && (
           <div className="h-1.5 overflow-hidden rounded-full bg-track" aria-hidden>
             <div
               className="h-full rounded-full bg-primary transition-[width] duration-500"
@@ -199,18 +237,24 @@ function DayPage({
 
       {items.length === 0 ? (
         <p className="py-12 text-center text-sm text-muted-foreground">
-          {date === today ? "Nada para hoje." : "Nada para este dia."}
+          {overdue ? "Nada atrasado 🎉" : date === today ? "Nada para hoje." : "Nada para este dia."}
         </p>
       ) : view === "list" ? (
         <div className="space-y-[9px]">
           {sorted.map((o) => (
-            <Row key={o.id} occ={o} showSpace showAssignee={showAssignee} />
+            <Row
+              key={o.id}
+              occ={o}
+              showSpace
+              showAssignee={showAssignee}
+              late={overdue ? lateLabel(o.date, today) : undefined}
+            />
           ))}
         </div>
       ) : (
         <div className="space-y-3">
           {groups.map((g) => (
-            <GroupCard key={g[0].spaceId} date={date} items={g} showAssignee={showAssignee} />
+            <GroupCard key={g[0].spaceId} date={date} today={today} items={g} showAssignee={showAssignee} />
           ))}
         </div>
       )}
@@ -238,17 +282,31 @@ export function TasksBoard({
   const [view, setView] = useLocalPref("tend-tasks-view", "list", VIEWS);
   const pager = useRef<HTMLDivElement>(null);
   const chips = useRef<(HTMLButtonElement | null)[]>([]);
-  const [active, setActive] = useState(0);
+  // páginas: [Atrasadas] [Hoje] [Amanhã] … — o app abre em Hoje (índice 1); voltar mostra as atrasadas
+  const pages = useMemo(() => [OVERDUE, ...days], [days]);
+  const [active, setActive] = useState(1);
+  // false no servidor/hidratação, true depois: esconde o pager até posicionar em Hoje
+  const hydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   const visible = useMemo(
     () => (scope === "all" ? occurrences : occurrences.filter((o) => o.assignedTo === meId || o.assignedTo === null)),
     [occurrences, scope, meId],
   );
   const byDay = useMemo(() => {
-    const map = new Map<string, BoardOccurrence[]>(days.map((d) => [d, []]));
-    for (const o of visible) map.get(o.date)?.push(o);
+    const map = new Map<string, BoardOccurrence[]>(pages.map((d) => [d, []]));
+    for (const o of visible) map.get(o.date < today ? OVERDUE : o.date)?.push(o);
     return map;
-  }, [visible, days]);
+  }, [visible, pages, today]);
+
+  // posiciona em Hoje antes da primeira pintura (sem piscar a página de atrasadas)
+  useLayoutEffect(() => {
+    const el = pager.current;
+    if (hydrated && el) el.scrollLeft = el.clientWidth;
+  }, [hydrated]);
 
   // sincroniza a faixa de dias com a rolagem lateral
   useEffect(() => {
@@ -322,10 +380,11 @@ export function TasksBoard({
 
       {/* faixa de dias */}
       <div className="no-scrollbar flex gap-2 overflow-x-auto px-[22px]" role="tablist" aria-label="Dias">
-        {days.map((d, i) => {
+        {pages.map((d, i) => {
           const list = byDay.get(d) ?? [];
           const pending = list.filter((o) => !o.done).length;
           const isActive = active === i;
+          const isOverdue = d === OVERDUE;
           return (
             <button
               key={d}
@@ -342,15 +401,23 @@ export function TasksBoard({
               )}
             >
               <span className={cn("text-[11px] font-bold uppercase", isActive ? "text-white/90" : "text-subtle")}>
-                {i === 0 ? "Hoje" : weekday(d)}
+                {isOverdue ? "Atrasadas" : i === 1 ? "Hoje" : weekday(d)}
               </span>
-              <span className="text-[17px] font-extrabold leading-none">{format(parseISO(d), "d")}</span>
+              <span
+                className={cn(
+                  "text-[17px] font-extrabold leading-none",
+                  isOverdue && !isActive && pending > 0 && "text-destructive",
+                  isOverdue && pending === 0 && !isActive && "text-faint",
+                )}
+              >
+                {isOverdue ? pending : format(parseISO(d), "d")}
+              </span>
               <span
                 className={cn(
                   "mt-0.5 h-1.5 w-1.5 rounded-full",
-                  pending > 0 ? (isActive ? "bg-white" : "bg-primary") : "bg-transparent",
+                  !isOverdue && pending > 0 ? (isActive ? "bg-white" : "bg-primary") : "bg-transparent",
                 )}
-                aria-label={pending > 0 ? `${pending} pendentes` : undefined}
+                aria-label={!isOverdue && pending > 0 ? `${pending} pendentes` : undefined}
               />
             </button>
           );
@@ -360,10 +427,10 @@ export function TasksBoard({
       {/* páginas dos dias: rolagem lateral com encaixe */}
       <div
         ref={pager}
-        className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain"
+        className={cn("no-scrollbar flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain", !hydrated && "invisible")}
         style={{ scrollbarWidth: "none" }}
       >
-        {days.map((d) => (
+        {pages.map((d) => (
           <DayPage
             key={d}
             date={d}
