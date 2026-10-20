@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { signOut } from "@/app/(auth)/actions";
 import { getCurrentUser } from "@/lib/auth";
+import { getAppVersion } from "@/lib/version";
+import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -22,6 +25,7 @@ export default async function ProfilePage() {
 
   const access = await getAccess();
   const name = profile?.name ?? user.email ?? "Usuário";
+  const app = getAppVersion();
 
   return (
     <div className="px-4 py-10 space-y-8">
@@ -46,6 +50,14 @@ export default async function ProfilePage() {
           Sair
         </Button>
       </form>
+
+      {/* versão em execução: só o admin vê (útil para conferir o que está no ar) */}
+      {access?.isAdmin && (
+        <p className="text-center text-xs text-subtle">
+          Tend v{app.version} · {app.commit}
+          {app.builtAt && ` · ${format(parseISO(app.builtAt), "d MMM yyyy, HH:mm", { locale: ptBR })}`}
+        </p>
+      )}
     </div>
   );
 }

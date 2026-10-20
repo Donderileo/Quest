@@ -187,6 +187,9 @@ curl http://localhost:3000/api/cron/generate-occurrences \
 
 ---
 
+## Versões
+SemVer em `package.json` (hoje **0.2.0**); histórico em [CHANGELOG.md](CHANGELOG.md), com o passo a passo de lançamento. O admin vê a versão em **Perfil**.
+
 ## Funcionalidades
 
 - Casas com **seletor** (abre direto na casa; troca só aparece com 2+)
