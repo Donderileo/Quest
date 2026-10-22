@@ -58,6 +58,12 @@ export function TaskForm({
   function toggleDay(d: number) {
     setSelectedDays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
   }
+  function chooseAssignment(next: "fixed" | "rotation") {
+    setAssignment(next);
+    // rodízio sem ninguém deixava a tarefa sem responsável: por padrão entram todos
+    if (next === "rotation" && rotationOrder.length === 0) setRotationOrder(members.map((m) => m.id));
+  }
+
   function toggleRotation(userId: string) {
     setRotationOrder((prev) =>
       prev.includes(userId) ? prev.filter((x) => x !== userId) : [...prev, userId],
@@ -197,7 +203,7 @@ export function TaskForm({
                   <button
                     key={a}
                     type="button"
-                    onClick={() => setAssignment(a)}
+                    onClick={() => chooseAssignment(a)}
                     className={cn(
                       "flex-1 rounded-[9px] py-2 text-[13.5px] font-semibold transition-colors",
                       assignment === a ? "bg-primary text-white" : "text-muted-foreground",
@@ -212,7 +218,7 @@ export function TaskForm({
             <p className="mx-0.5 my-2.5 text-[12.5px] font-medium text-muted-foreground">
               {assignment === "fixed"
                 ? "Sempre a mesma pessoa cuida desta tarefa."
-                : "Cada um faz uma vez, nesta ordem, em rodízio."}
+                : "Cada um faz uma vez, nesta ordem. Todos entram por padrão: toque em quem não participa para tirar."}
             </p>
 
             {members.length === 0 ? (
@@ -264,6 +270,11 @@ export function TaskForm({
                     </button>
                   );
                 })}
+                {rotationOrder.length === 0 && (
+                  <p className="px-1 text-[12.5px] font-semibold text-destructive">
+                    Escolha ao menos uma pessoa, senão a tarefa fica sem responsável.
+                  </p>
+                )}
                 {members
                   .filter((m) => !rotationOrder.includes(m.id))
                   .map((m) => (

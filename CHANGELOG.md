@@ -5,13 +5,18 @@ Enquanto o app está em beta fechado, usamos `0.MINOR.PATCH`: **MINOR** = funcio
 mudança de comportamento; **PATCH** = correção. A versão fica em `package.json`; o admin a vê em
 **Perfil**, junto do commit e da data do build.
 
-## Como lançar uma versão
-1. Atualize este arquivo (mova o que está em *Não lançado* para a nova versão).
-2. `npm version minor --no-git-tag-version` (ou `patch`) para atualizar o `package.json`.
-3. Commit `release: vX.Y.Z`, tag `git tag vX.Y.Z` e `git push --follow-tags`.
-4. Se houver migration nova, `npx supabase db push` **antes** do deploy.
+## Regra: **toda mudança de código commitada sobe a versão**
+1. `npm version patch --no-git-tag-version` (correção) ou `minor` (funcionalidade nova).
+2. Uma entrada nova neste arquivo, no topo, com a data e o que mudou.
+3. Mensagem do commit começa com o tipo e termina com `(vX.Y.Z)`.
+4. Commits só de documentação não sobem a versão.
+5. Se houver migration nova, `npx supabase db push` **antes** do deploy.
 
-## Não lançado
+## 0.3.1 — Rodízio já começa com todo mundo (2026-10-22)
+- Ao escolher **Rodízio** na criação/edição da tarefa, **todos do ambiente entram por padrão**; toque em quem não
+  participa para tirar. Salvar um rodízio sem ninguém é bloqueado (deixava a tarefa sem responsável).
+
+## 0.3.0 — Tarefas do dia, datas e redistribuição (2026-10-22)
 - **Redistribuir tarefas** (Casa → engrenagem → *Redistribuir tarefas*): passa tudo de uma pessoa para outra com dois toques,
   ou **divide** entre as duas; na casa toda ou só em ambientes escolhidos. Mostra antes quantas tarefas (fixas + rodízios) serão
   afetadas. A pessoa que recebe entra nos ambientes, os rodízios trocam a pessoa na fila e as ocorrências de hoje em diante são

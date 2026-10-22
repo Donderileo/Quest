@@ -40,6 +40,11 @@ export async function updateTask(_prev: unknown, formData: FormData) {
     return { error: "A data de término não pode ser antes do início." };
   }
 
+  // rodízio vazio deixaria a tarefa sem ninguém: exige ao menos uma pessoa
+  if (parsed.data.assignmentType === "rotation" && !formData.getAll("rotationUserIds").some(Boolean)) {
+    return { error: "Escolha ao menos uma pessoa para o rodízio." };
+  }
+
   const supabase = await createClient();
 
   // O .select() devolve a linha só se o RLS permitiu (membro da casa).
