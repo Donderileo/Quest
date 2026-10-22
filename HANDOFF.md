@@ -104,6 +104,11 @@ Data de referência: outubro/2026. Autor do produto: Leo (donderileo@gmail.com).
 - Funções da Vercel na mesma região do banco (`iad1`, Supabase em us-east-1).
 - Medido localmente (modo produção): páginas de 177–246 ms para 19–59 ms.
 
+### 2.4f Redistribuir tarefas (migration 11)
+- `redistribute_tasks()` (SECURITY DEFINER, qualquer membro da casa): `move` passa tudo de A para B; `split` alterna fixas e inclui B nos rodízios; escopo = casa toda ou ambientes. B entra nos ambientes afetados; rodízio troca A por B na fila (ou só remove A se B já está). Valida origem/destino na casa e `from != to`.
+- O app (`redistributeTasks` em `homes/actions.ts`) regenera as ocorrências futuras dos **rodízios** (a atribuição é calculada em `occurrences.ts`); as de responsável fixo são atualizadas no próprio SQL.
+- **Ambiente local:** o Colima padrão (2 CPU/2 GiB) trava com a pilha do Supabase (`PGRST003 Timed out acquiring connection`); use 4 CPU/6 GiB.
+
 ### 2.5 Realtime via router.refresh()
 - **Decisão:** componente client `RealtimeRefresh` assina `postgres_changes` nas tabelas (`task_occurrences`, `space_member_points`, `tasks`) e chama `router.refresh()` ao receber evento.
 - **Por quê:** o refetch acontece no **servidor**, sob RLS — o navegador só é avisado "algo mudou". Sem vazamento; pior caso é um refresh desnecessário.

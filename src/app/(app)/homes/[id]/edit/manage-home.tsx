@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useTransition } from "react";
 import Link from "next/link";
-import { ArrowLeft, LogOut, RefreshCw, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRightLeft, LogOut, RefreshCw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { deleteHome, leaveHome, regenerateInviteCode, renameHome } from "../../actions";
@@ -105,6 +105,20 @@ export function ManageHome({
         </div>
         {codeMsg && <p className="mt-2 text-sm font-medium text-muted-foreground">{codeMsg}</p>}
       </div>
+
+      {/* redistribuir */}
+      <Link
+        href={`/homes/${home.id}/redistribute`}
+        className="press flex items-center gap-3 rounded-[15px] bg-card p-4 shadow-[0_2px_7px_-3px_rgba(40,45,40,.07)]"
+      >
+        <span className="flex size-10 items-center justify-center rounded-xl bg-accent text-accent-foreground">
+          <ArrowRightLeft className="size-5" />
+        </span>
+        <span className="flex-1">
+          <span className="block font-bold">Redistribuir tarefas</span>
+          <span className="block text-xs text-muted-foreground">Passe tarefas de uma pessoa para outra</span>
+        </span>
+      </Link>
 
       {/* sair / excluir */}
       <div className="space-y-3 pt-2">

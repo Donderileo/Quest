@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { BarChart3, ChevronRight, Plus, Settings, UserPlus } from "lucide-react";
+import { ArrowRightLeft, BarChart3, ChevronRight, Plus, Settings, UserPlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { buttonVariants } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
@@ -52,7 +52,7 @@ export default async function HomePage({
             .from("space_members")
             .select("space_id, profiles(name, avatar_url)")
             .in("space_id", spaceIds),
-          supabase.from("tasks").select("id, space_id").in("space_id", spaceIds).is("archived_at", null),
+          supabase.from("tasks").select("id, space_id, assignee_id, assignment_type").in("space_id", spaceIds).is("archived_at", null),
           supabase
             .from("task_occurrences")
             .select("id, status, tasks!inner(space_id)")
@@ -80,6 +80,14 @@ export default async function HomePage({
   }
 
   const memberCount = members?.length ?? 0;
+
+  // convite para redistribuir: você tem várias tarefas fixas e alguém da casa ainda não tem nenhuma
+  const myFixed = (tasks ?? []).filter((t) => t.assignment_type === "fixed" && t.assignee_id === user?.id).length;
+  const idlePerson = (members ?? [])
+    .filter((m) => m.user_id !== user?.id && !(tasks ?? []).some((t) => t.assignment_type === "fixed" && t.assignee_id === m.user_id))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .map((m) => (m.profiles as any) as { name: string } | null)
+    .find(Boolean);
 
   return (
     <div className="space-y-5 px-[22px] py-4">
@@ -122,6 +130,19 @@ export default async function HomePage({
           Métricas
         </Link>
       </div>
+
+      {myFixed >= 2 && idlePerson && (
+        <Link
+          href={`/homes/${id}/redistribute`}
+          className="press flex items-center gap-3 rounded-[15px] bg-accent p-4 text-accent-foreground"
+        >
+          <ArrowRightLeft className="size-5 shrink-0" />
+          <span className="flex-1 text-sm font-semibold">
+            {idlePerson.name} ainda não tem tarefas. Quer passar algumas para {idlePerson.name.split(" ")[0]}?
+          </span>
+          <ChevronRight className="size-4 shrink-0" />
+        </Link>
+      )}
 
       {/* código de convite */}
       <div className="rounded-[15px] bg-card p-4 shadow-[0_2px_7px_-3px_rgba(40,45,40,.07)]">

@@ -12,6 +12,10 @@ mudança de comportamento; **PATCH** = correção. A versão fica em `package.js
 4. Se houver migration nova, `npx supabase db push` **antes** do deploy.
 
 ## Não lançado
+- **Redistribuir tarefas** (Casa → engrenagem → *Redistribuir tarefas*): passa tudo de uma pessoa para outra com dois toques,
+  ou **divide** entre as duas; na casa toda ou só em ambientes escolhidos. Mostra antes quantas tarefas (fixas + rodízios) serão
+  afetadas. A pessoa que recebe entra nos ambientes, os rodízios trocam a pessoa na fila e as ocorrências de hoje em diante são
+  recalculadas. Aparece um convite na tela da Casa quando alguém ainda não tem tarefas. Banco: migration 11.
 - **Atrasadas:** deslizando para a esquerda a partir de **Hoje** (ou tocando na chip "Atrasadas") aparece uma seção
   só com as pendências de dias anteriores (últimos 30 dias), mais antigas primeiro, com "Ontem" / "há N dias".
   O app continua abrindo em Hoje. A chip mostra a contagem e fica laranja quando há pendência.

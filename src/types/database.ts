@@ -496,6 +496,17 @@ export type Database = {
         }
       }
       leave_home: { Args: { h: string }; Returns: undefined }
+      redistribute_tasks: {
+        Args: {
+          p_from: string
+          p_home: string
+          p_mode: string
+          p_space_ids: string[]
+          p_to: string
+          p_today: string
+        }
+        Returns: Json
+      }
       regenerate_invite_code: { Args: { h: string }; Returns: string }
       space_home: { Args: { s: string }; Returns: string }
       task_space: { Args: { t: string }; Returns: string }

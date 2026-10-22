@@ -104,6 +104,7 @@ Pré-requisitos: Node 20+, Docker (para o Supabase local), Supabase CLI (`npx su
 # 1. instalar deps
 npm install
 
+# (Colima: dê recursos à VM, senão o Supabase local trava — `colima stop && colima start --cpu 4 --memory 6`)
 # 2. subir o Supabase local (Postgres, Auth, Realtime, Studio)
 npx supabase start        # no Colima: npx supabase start -x vector
 
