@@ -109,6 +109,12 @@ Data de referência: outubro/2026. Autor do produto: Leo (donderileo@gmail.com).
 - O app (`redistributeTasks` em `homes/actions.ts`) regenera as ocorrências futuras dos **rodízios** (a atribuição é calculada em `occurrences.ts`); as de responsável fixo são atualizadas no próprio SQL.
 - **Ambiente local:** o Colima padrão (2 CPU/2 GiB) trava com a pilha do Supabase (`PGRST003 Timed out acquiring connection`); use 4 CPU/6 GiB.
 
+### 2.4g Balanceamento de rodízios (migration 12)
+- **Causa do "tudo para uma pessoa por dia":** o índice do rodízio (`before + i`) só dependia da própria tarefa. Correção na geração: `rotationStartOffset(rank)` — posição da tarefa entre os rodízios da casa por `(created_at, id)` (`rankRotationTasks` em `rotation.ts`), usada em `occurrences.ts`. Existentes só mudam ao Balancear.
+- **`src/lib/balance.ts`** (puro): guloso por balde (dia ou semana), peso desc; critérios: menor carga → quem menos tem ESTA tarefa → não repetir a anterior → posição na fila; mantém o atual em empate; **nunca piora** e é **idempotente** (teste de propriedade com 200 cenários). Fixas e concluídas = carga fixa; só rodízios pendentes de hoje em diante são movíveis.
+- **`balance-data.ts`** (puro, usado no cliente para a prévia e no servidor para recalcular) e **`balance-load.ts`** (leitura sob RLS). A action `balanceTasks` recalcula no servidor e grava via **`apply_balance`** (SECURITY DEFINER, tudo-ou-nada: casa/pendente/futuro/rodízio/pessoa na fila). O Desfazer usa a mesma função com os responsáveis anteriores.
+- Pontos pesam só em ambiente gamificado (senão 0). Aviso na Casa só quando o botão consegue reduzir uma diferença ≥ 2.
+
 ### 2.5 Realtime via router.refresh()
 - **Decisão:** componente client `RealtimeRefresh` assina `postgres_changes` nas tabelas (`task_occurrences`, `space_member_points`, `tasks`) e chama `router.refresh()` ao receber evento.
 - **Por quê:** o refetch acontece no **servidor**, sob RLS — o navegador só é avisado "algo mudou". Sem vazamento; pior caso é um refresh desnecessário.

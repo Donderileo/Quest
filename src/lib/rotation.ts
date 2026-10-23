@@ -32,3 +32,24 @@ export function assigneeForIndex(
     orderedUserIds.length;
   return orderedUserIds[i];
 }
+
+/**
+ * Posição (0-based) de cada tarefa de rodízio entre as da casa, por (criação, id): estável e determinística.
+ * Serve para escalonar o início do rodízio de cada tarefa.
+ */
+export function rankRotationTasks(tasks: { id: string; createdAt: string }[]): Map<string, number> {
+  const sorted = [...tasks].sort(
+    (a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt) || a.id.localeCompare(b.id),
+  );
+  return new Map(sorted.map((t, i) => [t.id, i]));
+}
+
+/**
+ * Deslocamento do início do rodízio para uma tarefa de posição `rank`.
+ * Sem isso, tarefas criadas juntas e com a mesma fila caem todas na MESMA pessoa no mesmo dia
+ * (o índice só dependia da própria tarefa). Com o deslocamento, N tarefas iguais se espalham
+ * entre as pessoas já no primeiro dia, e cada uma continua percorrendo a fila inteira.
+ */
+export function rotationStartOffset(rank: number): number {
+  return Math.max(0, rank);
+}

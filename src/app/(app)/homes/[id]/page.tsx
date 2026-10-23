@@ -1,12 +1,15 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowRightLeft, BarChart3, ChevronRight, Plus, Settings, UserPlus } from "lucide-react";
+import { ArrowRightLeft, BarChart3, ChevronRight, Plus, Scale, Settings, UserPlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { buttonVariants } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { HomeSwitcher } from "@/components/home-switcher";
 import { cn } from "@/lib/utils";
 import { todayISO } from "@/lib/tz";
+import { balance } from "@/lib/balance";
+import { buildBalanceInput } from "@/lib/balance-data";
+import { loadBalanceData } from "@/lib/balance-load";
 import { spaceEmoji, spaceTint } from "@/lib/space-icon";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -81,6 +84,15 @@ export default async function HomePage({
 
   const memberCount = members?.length ?? 0;
 
+  // aviso de balanceamento: só quando há rodízio e o botão consegue melhorar (diferença ≥ 2 em algum dia)
+  let unbalanced = false;
+  if (memberCount >= 2 && (tasks ?? []).some((t) => t.assignment_type === "rotation")) {
+    const plan = balance(
+      buildBalanceInput(await loadBalanceData(supabase, id, today), { spaceIds: [], mode: "daily", metric: "count" }),
+    );
+    unbalanced = plan.changes.length > 0 && plan.spreadBefore >= 2;
+  }
+
   // convite para redistribuir: você tem várias tarefas fixas e alguém da casa ainda não tem nenhuma
   const myFixed = (tasks ?? []).filter((t) => t.assignment_type === "fixed" && t.assignee_id === user?.id).length;
   const idlePerson = (members ?? [])
@@ -139,6 +151,19 @@ export default async function HomePage({
           <ArrowRightLeft className="size-5 shrink-0" />
           <span className="flex-1 text-sm font-semibold">
             {idlePerson.name} ainda não tem tarefas. Quer passar algumas para {idlePerson.name.split(" ")[0]}?
+          </span>
+          <ChevronRight className="size-4 shrink-0" />
+        </Link>
+      )}
+
+      {unbalanced && (
+        <Link
+          href={`/homes/${id}/balance`}
+          className="press flex items-center gap-3 rounded-[15px] bg-accent p-4 text-accent-foreground"
+        >
+          <Scale className="size-5 shrink-0" />
+          <span className="flex-1 text-sm font-semibold">
+            O rodízio dos próximos dias está desbalanceado. Quer equilibrar entre as pessoas?
           </span>
           <ChevronRight className="size-4 shrink-0" />
         </Link>

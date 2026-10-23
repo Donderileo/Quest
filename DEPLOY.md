@@ -12,7 +12,7 @@ Legenda: 🧑 = ação sua (precisa de login/segredo) · 🤖 = o Claude pode fa
 
 ## 0. Pré-voo ✅
 - Build, lint e testes passam (`npm run build && npm run lint && npm test`).
-- 9 migrations versionadas (a `…000008_user_access.sql` cria a aprovação por admin e substitui a allowlist da 7).
+- 12 migrations versionadas (a `…000008_user_access.sql` cria a aprovação por admin e substitui a allowlist da 7).
 - Cron protegido (`CRON_SECRET` obrigatório) e datas no fuso `America/Sao_Paulo`.
 - `vercel.json`: funções em `gru1` (São Paulo) + cron diário 06:00 UTC (03:00 em Brasília).
 

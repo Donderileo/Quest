@@ -12,6 +12,17 @@ mudança de comportamento; **PATCH** = correção. A versão fica em `package.js
 4. Commits só de documentação não sobem a versão.
 5. Se houver migration nova, `npx supabase db push` **antes** do deploy.
 
+## 0.4.0 — Balancear tarefas (2026-10-23)
+- **Rodízio não joga mais tudo na mesma pessoa no mesmo dia.** A causa: cada tarefa escolhia o responsável só pelo próprio
+  histórico, então tarefas criadas juntas, com a mesma fila, caíam todas na mesma pessoa. Agora o início do rodízio é
+  escalonado por tarefa (6 tarefas iguais saem 2 para cada uma de 3 pessoas já no primeiro dia).
+- **Balancear tarefas** (Casa → engrenagem → *Balancear tarefas*): mostra a carga de cada pessoa nos próximos 7 dias,
+  **Agora × Depois**, por **dia** ou na **semana**, em **tarefas** ou **pontos**, na **casa toda** ou em **ambientes** escolhidos,
+  e aplica com um toque. Tarefas fixas e já concluídas contam como carga, mas não mudam; só rodízios são movidos, sempre para
+  quem está na fila da tarefa. Aviso **Desfazer** depois de aplicar. Idempotente: rodar de novo não muda nada.
+- Aviso na tela da **Casa** quando há desequilíbrio que o botão consegue corrigir.
+- Banco: migration 12 (`apply_balance`, atômica, com validações). Editar um rodízio refaz a distribuição dele.
+
 ## 0.3.1 — Rodízio já começa com todo mundo (2026-10-22)
 - Ao escolher **Rodízio** na criação/edição da tarefa, **todos do ambiente entram por padrão**; toque em quem não
   participa para tirar. Salvar um rodízio sem ninguém é bloqueado (deixava a tarefa sem responsável).

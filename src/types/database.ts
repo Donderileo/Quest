@@ -455,6 +455,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_balance: {
+        Args: { p_assignments: Json; p_home: string; p_today: string }
+        Returns: number
+      }
       create_home: {
         Args: { home_name: string }
         Returns: {

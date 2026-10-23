@@ -5,6 +5,9 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { generateOccurrences } from "@/lib/occurrences";
+import { balance } from "@/lib/balance";
+import { buildBalanceInput } from "@/lib/balance-data";
+import { loadBalanceData } from "@/lib/balance-load";
 import { todayISO } from "@/lib/tz";
 
 const homeSchema = z.object({
@@ -166,4 +169,78 @@ export async function redistributeTasks(input: z.infer<typeof redistributeSchema
     rotations: result.rotation_task_ids.length,
     spacesJoined: result.spaces_joined,
   };
+}
+
+const balanceSchema = z.object({
+  homeId: z.string().min(1),
+  spaceIds: z.array(z.string().min(1)),
+  mode: z.enum(["daily", "weekly"]),
+  metric: z.enum(["count", "points"]),
+});
+
+const undoSchema = z.object({
+  homeId: z.string().min(1),
+  assignments: z.array(z.object({ occ: z.string().min(1), user_id: z.string().min(1) })).max(2000),
+});
+
+export type BalanceResult =
+  | { error: string }
+  | { ok: true; changed: number; undo: { occ: string; user_id: string }[] };
+
+function balanceError(message: string) {
+  console.error("[balance]", message);
+  return /invalid_assignment/.test(message)
+    ? "Algumas tarefas mudaram (foram concluídas ou alteradas) desde a prévia. Atualize e tente de novo."
+    : "Não foi possível balancear as tarefas agora.";
+}
+
+/**
+ * Balanceia os rodízios dos próximos 7 dias. O plano é recalculado AQUI, no servidor, com os dados
+ * lidos sob RLS (nunca o plano do cliente), e aplicado de forma atômica por apply_balance.
+ */
+export async function balanceTasks(input: z.infer<typeof balanceSchema>): Promise<BalanceResult> {
+  const parsed = balanceSchema.safeParse(input);
+  if (!parsed.success) return { error: "Opções inválidas." };
+  const { homeId, spaceIds, mode, metric } = parsed.data;
+
+  const supabase = await createClient();
+  const today = todayISO();
+  const data = await loadBalanceData(supabase, homeId, today);
+  const plan = balance(buildBalanceInput(data, { spaceIds, mode, metric }));
+  if (plan.changes.length === 0) return { ok: true, changed: 0, undo: [] };
+
+  const { error } = await supabase.rpc("apply_balance", {
+    p_home: homeId,
+    p_assignments: plan.changes.map((c) => ({ occ: c.id, user_id: c.to })),
+    p_today: today,
+  });
+  if (error) return { error: balanceError(error.message) };
+
+  revalidatePath("/tasks");
+  revalidatePath("/homes", "layout");
+  revalidatePath("/spaces/[id]", "page");
+  return {
+    ok: true,
+    changed: plan.changes.length,
+    // só dá para desfazer o que tinha responsável antes
+    undo: plan.changes.filter((c) => c.from).map((c) => ({ occ: c.id, user_id: c.from as string })),
+  };
+}
+
+/** Desfazer: devolve cada ocorrência ao responsável anterior (mesma validação do apply_balance). */
+export async function undoBalance(input: z.infer<typeof undoSchema>): Promise<BalanceResult> {
+  const parsed = undoSchema.safeParse(input);
+  if (!parsed.success) return { error: "Nada para desfazer." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("apply_balance", {
+    p_home: parsed.data.homeId,
+    p_assignments: parsed.data.assignments,
+    p_today: todayISO(),
+  });
+  if (error) return { error: balanceError(error.message) };
+
+  revalidatePath("/tasks");
+  revalidatePath("/homes", "layout");
+  revalidatePath("/spaces/[id]", "page");
+  return { ok: true, changed: parsed.data.assignments.length, undo: [] };
 }

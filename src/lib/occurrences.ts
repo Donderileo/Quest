@@ -1,6 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { dueDatesInRange } from "@/lib/recurrence";
-import { assigneeForIndex, orderedQueue } from "@/lib/rotation";
+import { assigneeForIndex, orderedQueue, rankRotationTasks, rotationStartOffset } from "@/lib/rotation";
 import { addDaysISO, todayISO } from "@/lib/tz";
 
 type TaskRow = {
@@ -12,10 +12,12 @@ type TaskRow = {
   assignee_id: string | null;
   start_date: string;
   end_date: string | null;
+  created_at: string;
+  spaces: { home_id: string };
 };
 
 const TASK_COLS =
-  "id, recurrence_type, recurrence_days, recurrence_interval_days, assignment_type, assignee_id, start_date, end_date";
+  "id, recurrence_type, recurrence_days, recurrence_interval_days, assignment_type, assignee_id, start_date, end_date, created_at, spaces!inner(home_id)";
 
 const CHUNK = 10;
 
@@ -25,9 +27,10 @@ const CHUNK = 10;
  * (INSERT em task_occurrences é restrito por RLS). Idempotente: upsert em
  * (task_id, due_date) ignorando duplicadas.
  *
- * Rodízio: a n-ésima ocorrência da tarefa vai para fila[n % tamanho], onde n é
- * a posição cronológica — (ocorrências antes da janela) + índice na janela —,
- * não a contagem total. Assim rodar duas vezes nunca desloca a fila.
+ * Rodízio: a n-ésima ocorrência da tarefa vai para fila[(n + deslocamento) % tamanho], onde n é
+ * a posição cronológica — (ocorrências antes da janela) + índice na janela — e o deslocamento é a
+ * posição da tarefa entre os rodízios da casa (escalona o início: tarefas iguais não caem todas
+ * na mesma pessoa no mesmo dia). Determinístico: rodar duas vezes nunca desloca a fila.
  */
 export async function generateOccurrences(
   taskIds?: string[],
@@ -41,7 +44,7 @@ export async function generateOccurrences(
   if (taskIds) query = query.in("id", taskIds);
   const { data, error } = await query;
   if (error) throw new Error(error.message);
-  const tasks = (data ?? []) as TaskRow[];
+  const tasks = (data ?? []) as unknown as TaskRow[];
 
   // filas de rodízio de todas as tarefas num só round-trip
   const rotationIds = tasks.filter((t) => t.assignment_type === "rotation").map((t) => t.id);
@@ -55,6 +58,25 @@ export async function generateOccurrences(
       if (!queues.has(e.task_id)) queues.set(e.task_id, []);
       queues.get(e.task_id)!.push({ userId: e.user_id, position: e.position });
     }
+  }
+
+  // posição de cada rodízio entre TODOS os da casa (mesmo ao gerar só uma tarefa), para escalonar o início
+  const ranks = new Map<string, number>();
+  const homeIds = [...new Set(tasks.filter((t) => t.assignment_type === "rotation").map((t) => t.spaces.home_id))];
+  if (homeIds.length) {
+    const { data: all } = await supabase
+      .from("tasks")
+      .select("id, created_at, spaces!inner(home_id)")
+      .eq("assignment_type", "rotation")
+      .is("archived_at", null)
+      .in("spaces.home_id", homeIds);
+    const byHome = new Map<string, { id: string; createdAt: string }[]>();
+    for (const t of (all ?? []) as unknown as { id: string; created_at: string; spaces: { home_id: string } }[]) {
+      const list = byHome.get(t.spaces.home_id) ?? [];
+      list.push({ id: t.id, createdAt: t.created_at });
+      byHome.set(t.spaces.home_id, list);
+    }
+    for (const list of byHome.values()) for (const [id, rank] of rankRotationTasks(list)) ranks.set(id, rank);
   }
 
   let created = 0;
@@ -88,7 +110,7 @@ export async function generateOccurrences(
     const rows = dues.map((due, i) => ({
       task_id: task.id,
       due_date: due,
-      assigned_to: task.assignment_type === "fixed" ? task.assignee_id : assigneeForIndex(queue, before + i),
+      assigned_to: task.assignment_type === "fixed" ? task.assignee_id : assigneeForIndex(queue, before + i + rotationStartOffset(ranks.get(task.id) ?? 0)),
       status: "pending" as const,
     }));
 
