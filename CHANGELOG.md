@@ -12,6 +12,12 @@ mudança de comportamento; **PATCH** = correção. A versão fica em `package.js
 4. Commits só de documentação não sobem a versão.
 5. Se houver migration nova, `npx supabase db push` **antes** do deploy.
 
+## 0.5.0 — Ignorar atrasadas (2026-11-10)
+- Botão **Ignorar tudo** na seção **Atrasadas**: marca as pendências de dias anteriores como ignoradas, de uma vez, para
+  quem ficou um tempo sem usar o app. Segue o filtro da tela (**Minhas** ou **Da casa**) e inclui as mais antigas que a lista
+  não mostra (a lista só vai a 30 dias). Ignoradas saem da lista, não contam pontos e dá para **Desfazer** pelo aviso.
+  Sem migration (usa o status `skipped` que já existia).
+
 ## 0.4.0 — Balancear tarefas (2026-10-23)
 - **Rodízio não joga mais tudo na mesma pessoa no mesmo dia.** A causa: cada tarefa escolhia o responsável só pelo próprio
   histórico, então tarefas criadas juntas, com a mesma fila, caíam todas na mesma pessoa. Agora o início do rodízio é

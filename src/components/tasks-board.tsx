@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronUp, LayoutGrid, List } from "lucide-react";
 import { differenceInCalendarDays, format, parseISO } from "date-fns";
@@ -11,6 +11,8 @@ import { spaceEmoji, spaceTint } from "@/lib/space-icon";
 import { addDaysISO } from "@/lib/tz";
 import { Avatar } from "@/components/ui/avatar";
 import { CheckButton } from "@/components/check-button";
+import { useToast } from "@/components/toast";
+import { restoreSkipped, skipOverdue } from "@/app/(app)/tasks/actions";
 
 export type BoardOccurrence = {
   id: string;
@@ -180,12 +182,16 @@ function DayPage({
   items,
   view,
   showAssignee,
+  onSkipAll,
+  skipping,
 }: {
   date: string;
   today: string;
   items: BoardOccurrence[];
   view: (typeof VIEWS)[number];
   showAssignee: boolean;
+  onSkipAll?: () => void;
+  skipping?: boolean;
 }) {
   const overdue = date === OVERDUE;
   // atrasadas: mais antigas primeiro; dias normais: pendentes antes das concluídas
@@ -222,7 +228,19 @@ function DayPage({
           )}
         </div>
         {overdue && items.length > 0 && (
-          <p className="text-[13px] text-muted-foreground">Ficaram para trás. Conclua agora para zerar a lista.</p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[13px] text-muted-foreground">Ficaram para trás. Conclua ou ignore para zerar a lista.</p>
+            {onSkipAll && (
+              <button
+                type="button"
+                onClick={onSkipAll}
+                disabled={skipping}
+                className="press shrink-0 rounded-lg bg-muted px-3 py-2 text-[13px] font-bold text-foreground disabled:opacity-50"
+              >
+                {skipping ? "Ignorando…" : "Ignorar tudo"}
+              </button>
+            )}
+          </div>
         )}
         {!overdue && items.length > 0 && (
           <div className="h-1.5 overflow-hidden rounded-full bg-track" aria-hidden>
@@ -339,6 +357,39 @@ export function TasksBoard({
   }
 
   const showAssignee = scope === "all";
+  const toast = useToast();
+  const [skipping, startSkip] = useTransition();
+
+  function skipAll() {
+    const shown = byDay.get(OVERDUE)?.length ?? 0;
+    if (
+      !confirm(
+        `Ignorar ${shown} ${shown === 1 ? "tarefa atrasada" : "tarefas atrasadas"}${scope === "mine" ? "" : " da casa"}? ` +
+          "Elas saem da lista e não contam pontos (inclui as mais antigas que a lista não mostra).",
+      )
+    )
+      return;
+    startSkip(async () => {
+      const res = await skipOverdue({ scope });
+      if ("error" in res) {
+        toast({ message: res.error });
+        return;
+      }
+      toast({
+        message: res.count === 0 ? "Nada para ignorar" : `${res.count} ${res.count === 1 ? "tarefa ignorada" : "tarefas ignoradas"}`,
+        ...(res.count > 0
+          ? {
+              actionLabel: "Desfazer",
+              onAction: () =>
+                startSkip(async () => {
+                  const back = await restoreSkipped({ ids: res.ids });
+                  toast({ message: "error" in back ? back.error : "Atrasadas de volta" });
+                }),
+            }
+          : {}),
+      });
+    });
+  }
 
   return (
     <div className="space-y-4 py-5">
@@ -438,6 +489,8 @@ export function TasksBoard({
             items={byDay.get(d) ?? []}
             view={view}
             showAssignee={showAssignee}
+            onSkipAll={d === OVERDUE ? skipAll : undefined}
+            skipping={skipping}
           />
         ))}
       </div>
