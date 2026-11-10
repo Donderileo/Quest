@@ -85,7 +85,9 @@ export function TaskSchedule({
         ? initialStart!
         : today;
   const endDate = endRaw || addDaysISO(start, 9);
-  const end = endMode === "date" ? endDate : null;
+  const once = recurrence === "once";
+  // avulsa não tem término: o servidor usa o próprio dia como fim
+  const end = !once && endMode === "date" ? endDate : null;
   const endBeforeStart = !!end && end < start;
 
   const first = endBeforeStart
@@ -102,7 +104,7 @@ export function TaskSchedule({
       {end && <input type="hidden" name="endDate" value={end} />}
 
       <div>
-        <div className={label}>Começa</div>
+        <div className={label}>{once ? "Quando" : "Começa"}</div>
         <div className={`${card} space-y-3`}>
           <Seg
             value={startMode}
@@ -111,8 +113,8 @@ export function TaskSchedule({
               setLastDone("");
             }}
             options={[
-              { value: "now", label: "Imediata" },
-              { value: "date", label: "Agendada" },
+              { value: "now", label: once ? "Hoje" : "Imediata" },
+              { value: "date", label: once ? "Outro dia" : "Agendada" },
             ]}
           />
           {startMode === "now" && keepsOriginalStart && !useLastDone && (
@@ -153,32 +155,34 @@ export function TaskSchedule({
         </div>
       </div>
 
-      <div>
-        <div className={label}>Termina</div>
-        <div className={`${card} space-y-3`}>
-          <Seg
-            value={endMode}
-            onChange={setEndMode}
-            options={[
-              { value: "none", label: "Sem fim" },
-              { value: "date", label: "Em uma data" },
-            ]}
-          />
-          {endMode === "date" && (
-            <input
-              type="date"
-              value={endRaw}
-              min={start}
-              onChange={(e) => setEndRaw(e.target.value)}
-              aria-label="Data de término"
-              className={dateInput}
+      {!once && (
+        <div>
+          <div className={label}>Termina</div>
+          <div className={`${card} space-y-3`}>
+            <Seg
+              value={endMode}
+              onChange={setEndMode}
+              options={[
+                { value: "none", label: "Sem fim" },
+                { value: "date", label: "Em uma data" },
+              ]}
             />
-          )}
-          {endBeforeStart && (
-            <p className="px-1 text-xs font-medium text-destructive">O término não pode ser antes do início.</p>
-          )}
+            {endMode === "date" && (
+              <input
+                type="date"
+                value={endRaw}
+                min={start}
+                onChange={(e) => setEndRaw(e.target.value)}
+                aria-label="Data de término"
+                className={dateInput}
+              />
+            )}
+            {endBeforeStart && (
+              <p className="px-1 text-xs font-medium text-destructive">O término não pode ser antes do início.</p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       <p
         className={cn(
@@ -189,7 +193,7 @@ export function TaskSchedule({
         {endBeforeStart
           ? "Ajuste as datas para ver a primeira ocorrência."
           : first
-            ? `Primeira ocorrência: ${pretty(first)}`
+            ? `${once ? "Será em" : "Primeira ocorrência:"} ${pretty(first)}`
             : "Nenhuma data cai nesse período — confira os dias e as datas."}
       </p>
     </div>

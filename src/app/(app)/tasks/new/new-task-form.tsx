@@ -7,10 +7,14 @@ export function NewTaskForm({
   spaceId,
   gamified,
   members,
+  once,
+  defaultAssigneeId,
 }: {
   spaceId: string;
   gamified: boolean;
   members: Member[];
+  once?: boolean;
+  defaultAssigneeId?: string | null;
 }) {
   return (
     <TaskForm
@@ -20,11 +24,11 @@ export function NewTaskForm({
       action={createTask}
       initial={{
         title: "",
-        recurrenceType: "daily",
+        recurrenceType: once ? "once" : "daily",
         recurrenceDays: [],
         recurrenceIntervalDays: 7,
         assignmentType: "fixed",
-        assigneeId: null,
+        assigneeId: defaultAssigneeId ?? null,
         rotationOrder: [],
         points: gamified ? 10 : 0,
       }}

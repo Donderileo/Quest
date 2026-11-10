@@ -11,7 +11,7 @@ const taskSchema = z.object({
   taskId: z.string().min(1),
   spaceId: z.string().min(1),
   title: z.string().min(1, "Título obrigatório").max(100),
-  recurrenceType: z.enum(["daily", "weekly", "custom"]),
+  recurrenceType: z.enum(["once", "daily", "weekly", "custom"]),
   recurrenceIntervalDays: z.coerce.number().int().positive().optional(),
   assignmentType: z.enum(["fixed", "rotation"]),
   assigneeId: z.string().min(1).optional(),
@@ -36,7 +36,8 @@ export async function updateTask(_prev: unknown, formData: FormData) {
     endDate: formData.get("endDate") || undefined,
   });
   if (!parsed.success) return { error: parsed.error.issues[0].message };
-  if (parsed.data.endDate && parsed.data.endDate < parsed.data.startDate) {
+  const once = parsed.data.recurrenceType === "once";
+  if (!once && parsed.data.endDate && parsed.data.endDate < parsed.data.startDate) {
     return { error: "A data de término não pode ser antes do início." };
   }
 
@@ -55,13 +56,13 @@ export async function updateTask(_prev: unknown, formData: FormData) {
     .update({
       title: parsed.data.title,
       recurrence_type: parsed.data.recurrenceType,
-      recurrence_days: recurrenceDays,
-      recurrence_interval_days: parsed.data.recurrenceIntervalDays ?? null,
+      recurrence_days: once ? [] : recurrenceDays,
+      recurrence_interval_days: once ? null : parsed.data.recurrenceIntervalDays ?? null,
       assignment_type: parsed.data.assignmentType,
       assignee_id: parsed.data.assignmentType === "fixed" ? parsed.data.assigneeId ?? null : null,
       points: parsed.data.points,
       start_date: parsed.data.startDate,
-      end_date: parsed.data.endDate ?? null,
+      end_date: once ? parsed.data.startDate : parsed.data.endDate ?? null,
     })
     .eq("id", parsed.data.taskId)
     .select("id")

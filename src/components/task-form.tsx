@@ -13,7 +13,7 @@ export type Member = { id: string; name: string; avatar_url: string | null };
 
 export type TaskFormInitial = {
   title: string;
-  recurrenceType: "daily" | "weekly" | "custom";
+  recurrenceType: "once" | "daily" | "weekly" | "custom";
   recurrenceDays: number[];
   recurrenceIntervalDays: number;
   assignmentType: "fixed" | "rotation";
@@ -130,15 +130,15 @@ export function TaskForm({
           <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-subtle">Repete</div>
           <div className="rounded-[15px] bg-card p-3.5 shadow-[0_2px_7px_-3px_rgba(40,45,40,.07)]">
             <div className="flex gap-1 rounded-xl bg-track p-1">
-              {(["daily", "weekly", "custom"] as const).map((r) => {
-                const labels = { daily: "Diário", weekly: "Semanal", custom: "Intervalo" };
+              {(["once", "daily", "weekly", "custom"] as const).map((r) => {
+                const labels = { once: "Uma vez", daily: "Diário", weekly: "Semanal", custom: "Intervalo" };
                 return (
                   <button
                     key={r}
                     type="button"
                     onClick={() => setRecurrence(r)}
                     className={cn(
-                      "flex-1 rounded-[9px] py-2 text-[13.5px] font-semibold transition-colors",
+                      "flex-1 rounded-[9px] py-2 text-[13px] font-semibold transition-colors",
                       recurrence === r ? "bg-primary text-white" : "text-muted-foreground",
                     )}
                   >
@@ -147,6 +147,12 @@ export function TaskForm({
                 );
               })}
             </div>
+
+            {recurrence === "once" && (
+              <p className="mx-0.5 mt-2.5 text-[12.5px] font-medium text-muted-foreground">
+                Acontece uma única vez, no dia escolhido, e não se repete.
+              </p>
+            )}
 
             {recurrence === "weekly" && (
               <div className="mt-3.5 flex justify-between">

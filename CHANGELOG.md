@@ -12,6 +12,12 @@ mudança de comportamento; **PATCH** = correção. A versão fica em `package.js
 4. Commits só de documentação não sobem a versão.
 5. Se houver migration nova, `npx supabase db push` **antes** do deploy.
 
+## 0.6.0 — Tarefa avulsa (2026-11-10)
+- **Tarefa avulsa ("Uma vez"):** algo que surgiu e não estava previsto, no dia, sem repetição. Botão **Nova tarefa** na tela
+  de Tarefas: pergunta o ambiente (se houver mais de um), abre já em "Uma vez" para **Hoje** (ou **Outro dia**) e com você como
+  responsável. Aparece na hora em Hoje, nunca se repete e some da aba Tudo depois que passa.
+- Nova opção **Uma vez** no formulário de tarefa (criar e editar). Banco: migration 13 (valor `once` em `recurrence_type`).
+
 ## 0.5.0 — Ignorar atrasadas (2026-11-10)
 - Botão **Ignorar tudo** na seção **Atrasadas**: marca as pendências de dias anteriores como ignoradas, de uma vez, para
   quem ficou um tempo sem usar o app. Segue o filtro da tela (**Minhas** ou **Da casa**) e inclui as mais antigas que a lista

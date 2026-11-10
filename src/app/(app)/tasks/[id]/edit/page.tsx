@@ -52,7 +52,7 @@ export default async function EditTaskPage({
       members={members}
       initial={{
         title: task.title,
-        recurrenceType: task.recurrence_type as "daily" | "weekly" | "custom",
+        recurrenceType: task.recurrence_type as "once" | "daily" | "weekly" | "custom",
         recurrenceDays: task.recurrence_days ?? [],
         recurrenceIntervalDays: task.recurrence_interval_days ?? 7,
         assignmentType: task.assignment_type as "fixed" | "rotation",

@@ -12,7 +12,7 @@ const taskSchema = z.object({
   spaceId: z.string().min(1),
   title: z.string().min(1, "Título obrigatório").max(100),
   description: z.string().optional(),
-  recurrenceType: z.enum(["daily", "weekly", "custom"]),
+  recurrenceType: z.enum(["once", "daily", "weekly", "custom"]),
   recurrenceDays: z.array(z.number()).optional(),
   recurrenceIntervalDays: z.coerce.number().int().positive().optional(),
   assignmentType: z.enum(["fixed", "rotation"]),
@@ -40,7 +40,7 @@ export async function createTask(_prev: unknown, formData: FormData) {
   });
 
   if (!parsed.success) return { error: parsed.error.issues[0].message };
-  if (parsed.data.endDate && parsed.data.endDate < parsed.data.startDate) {
+  if (parsed.data.recurrenceType !== "once" && parsed.data.endDate && parsed.data.endDate < parsed.data.startDate) {
     return { error: "A data de término não pode ser antes do início." };
   }
 
@@ -49,6 +49,7 @@ export async function createTask(_prev: unknown, formData: FormData) {
     return { error: "Escolha ao menos uma pessoa para o rodízio." };
   }
 
+  const once = parsed.data.recurrenceType === "once";
   const supabase = await createClient();
   const user = await getCurrentUser();
 
@@ -59,13 +60,14 @@ export async function createTask(_prev: unknown, formData: FormData) {
       title: parsed.data.title,
       description: parsed.data.description ?? null,
       recurrence_type: parsed.data.recurrenceType,
-      recurrence_days: recurrenceDaysRaw,
-      recurrence_interval_days: parsed.data.recurrenceIntervalDays ?? null,
+      // avulsa: sem dias/intervalo e termina no próprio dia
+      recurrence_days: once ? [] : recurrenceDaysRaw,
+      recurrence_interval_days: once ? null : parsed.data.recurrenceIntervalDays ?? null,
       assignment_type: parsed.data.assignmentType,
       assignee_id: parsed.data.assignmentType === "fixed" ? parsed.data.assigneeId ?? null : null,
       points: parsed.data.points,
       start_date: parsed.data.startDate,
-      end_date: parsed.data.endDate ?? null,
+      end_date: once ? parsed.data.startDate : parsed.data.endDate ?? null,
       created_by: user!.id,
     })
     .select("id, space_id")
@@ -91,5 +93,7 @@ export async function createTask(_prev: unknown, formData: FormData) {
   await generateOccurrencesForTask(data.id);
 
   revalidatePath(`/spaces/${data.space_id}`);
-  redirect(`/spaces/${data.space_id}`);
+  revalidatePath("/tasks");
+  // avulsa criada na hora: volta para as tarefas do dia, onde ela já aparece
+  redirect(once ? "/tasks" : `/spaces/${data.space_id}`);
 }

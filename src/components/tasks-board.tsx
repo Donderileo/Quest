@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronUp, LayoutGrid, List } from "lucide-react";
+import { ChevronDown, ChevronUp, LayoutGrid, List, Plus } from "lucide-react";
 import { differenceInCalendarDays, format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -474,6 +474,15 @@ export function TasksBoard({
           );
         })}
       </div>
+
+      {/* tarefa avulsa: algo que surgiu e não estava previsto */}
+      <Link
+        href="/tasks/new?once=1"
+        className="fixed bottom-[88px] right-5 z-40 flex h-[54px] items-center gap-2 rounded-[17px] bg-primary pl-[18px] pr-[22px] text-[15px] font-bold text-primary-foreground shadow-[0_12px_26px_-8px_rgba(74,124,89,.6)] transition-transform active:scale-[0.97]"
+      >
+        <Plus className="size-5" strokeWidth={2.6} />
+        Nova tarefa
+      </Link>
 
       {/* páginas dos dias: rolagem lateral com encaixe */}
       <div

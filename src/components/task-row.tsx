@@ -23,6 +23,7 @@ export type TaskTemplate = {
 };
 
 function recurrenceLabel(task: TaskTemplate): string {
+  if (task.recurrence_type === "once") return "Uma vez";
   if (task.recurrence_type === "daily") return "Todo dia";
   if (task.recurrence_type === "weekly") {
     return task.recurrence_days?.length
@@ -36,6 +37,10 @@ function recurrenceLabel(task: TaskTemplate): string {
 function periodLabel(task: TaskTemplate): { text: string; ended: boolean } | null {
   const today = todayISO();
   const short = (iso: string) => format(parseISO(iso), "d MMM", { locale: ptBR });
+  if (task.recurrence_type === "once" && task.start_date) {
+    if (task.start_date < today) return { text: `foi em ${short(task.start_date)}`, ended: true };
+    return { text: task.start_date === today ? "hoje" : short(task.start_date), ended: false };
+  }
   if (task.end_date && task.end_date < today) return { text: `Encerrada em ${short(task.end_date)}`, ended: true };
   if (task.start_date && task.start_date > today) {
     return { text: `Começa ${short(task.start_date)}${task.end_date ? ` · até ${short(task.end_date)}` : ""}`, ended: false };

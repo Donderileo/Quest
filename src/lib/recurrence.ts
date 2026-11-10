@@ -8,7 +8,7 @@ import {
   parseISO,
 } from "date-fns";
 
-export type RecurrenceType = "daily" | "weekly" | "custom";
+export type RecurrenceType = "once" | "daily" | "weekly" | "custom";
 
 export interface RecurrenceConfig {
   type: RecurrenceType;
@@ -33,6 +33,8 @@ export function isDueOn(config: RecurrenceConfig, date: string): boolean {
   if (config.endDate && isAfter(target, parseISO(config.endDate))) return false;
 
   switch (config.type) {
+    case "once":
+      return date === config.startDate;
     case "daily":
       return true;
     case "weekly":

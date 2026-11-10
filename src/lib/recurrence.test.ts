@@ -94,3 +94,26 @@ describe("endDate", () => {
     expect(dueDatesInRange(dose, "2026-10-19", "2026-12-31")).toEqual(["2026-11-04", "2026-12-04"]);
   });
 });
+
+describe("once (tarefa avulsa)", () => {
+  const c: RecurrenceConfig = { type: "once", startDate: "2026-11-12" };
+
+  it("vence só no dia escolhido", () => {
+    expect(isDueOn(c, "2026-11-12")).toBe(true);
+    expect(isDueOn(c, "2026-11-11")).toBe(false);
+    expect(isDueOn(c, "2026-11-13")).toBe(false);
+  });
+
+  it("gera exatamente uma data dentro da janela", () => {
+    expect(dueDatesInRange(c, "2026-11-10", "2026-11-17")).toEqual(["2026-11-12"]);
+  });
+
+  it("fora da janela não gera nada", () => {
+    expect(dueDatesInRange(c, "2026-11-20", "2026-11-27")).toEqual([]);
+    expect(dueDatesInRange(c, "2026-11-01", "2026-11-11")).toEqual([]);
+  });
+
+  it("hoje: aparece imediatamente", () => {
+    expect(dueDatesInRange({ type: "once", startDate: "2026-11-10" }, "2026-11-10", "2026-11-17")).toEqual(["2026-11-10"]);
+  });
+});

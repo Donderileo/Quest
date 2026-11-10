@@ -5,7 +5,7 @@ import { addDaysISO, todayISO } from "@/lib/tz";
 
 type TaskRow = {
   id: string;
-  recurrence_type: "daily" | "weekly" | "custom";
+  recurrence_type: "once" | "daily" | "weekly" | "custom";
   recurrence_days: number[] | null;
   recurrence_interval_days: number | null;
   assignment_type: "fixed" | "rotation";

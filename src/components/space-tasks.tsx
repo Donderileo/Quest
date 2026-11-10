@@ -159,7 +159,10 @@ export function SpaceTasks({
           {tasks.length === 0 ? (
             <p className="py-10 text-center text-sm text-muted-foreground">Nenhuma tarefa cadastrada ainda.</p>
           ) : (
-            tasks.map((task) => <TaskRow key={task.id} task={task} gamified={gamified} />)
+            tasks
+              // avulsas que já passaram não são "modelos" a manter: ficam só no histórico
+              .filter((t) => !(t.recurrence_type === "once" && t.end_date && t.end_date < today))
+              .map((task) => <TaskRow key={task.id} task={task} gamified={gamified} />)
           )}
         </div>
       )}

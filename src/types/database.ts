@@ -519,7 +519,7 @@ export type Database = {
       assignment_type: "fixed" | "rotation"
       member_role: "owner" | "admin" | "member"
       occurrence_status: "pending" | "done" | "skipped"
-      recurrence_type: "daily" | "weekly" | "custom"
+      recurrence_type: "daily" | "weekly" | "custom" | "once"
       space_mode: "simple" | "gamified"
     }
     CompositeTypes: {
@@ -654,7 +654,7 @@ export const Constants = {
       assignment_type: ["fixed", "rotation"],
       member_role: ["owner", "admin", "member"],
       occurrence_status: ["pending", "done", "skipped"],
-      recurrence_type: ["daily", "weekly", "custom"],
+      recurrence_type: ["daily", "weekly", "custom", "once"],
       space_mode: ["simple", "gamified"],
     },
   },
