@@ -22,6 +22,9 @@ export type BoardOccurrence = {
   assignedTo: string | null;
   assignee: { name: string; avatar_url: string | null } | null;
   title: string;
+  /** qual vez do dia (1ª, 2ª…) e quantas vezes por dia a tarefa tem */
+  slot: number;
+  times: number;
   points: number;
   gamified: boolean;
   spaceId: string;
@@ -50,8 +53,9 @@ function dayTitle(iso: string, today: string) {
   return long.charAt(0).toUpperCase() + long.slice(1);
 }
 
-/** pendentes primeiro, concluídas no fim (continuam visíveis: o dia nunca "some") */
-const byStatus = (a: BoardOccurrence, b: BoardOccurrence) => Number(a.done) - Number(b.done);
+/** pendentes primeiro, concluídas no fim (continuam visíveis: o dia nunca "some"); as vezes da mesma tarefa ficam juntas */
+const byStatus = (a: BoardOccurrence, b: BoardOccurrence) =>
+  Number(a.done) - Number(b.done) || a.title.localeCompare(b.title, "pt-BR") || a.slot - b.slot;
 
 function Row({
   occ,
@@ -73,13 +77,20 @@ function Row({
         flat ? "px-4 py-3" : "rounded-[15px] bg-card p-[14px] shadow-[0_2px_7px_-3px_rgba(40,45,40,.07)]",
       )}
     >
-      <CheckButton occurrenceId={occ.id} done={occ.done} title={occ.title} />
+      <CheckButton occurrenceId={occ.id} done={occ.done} title={occ.times > 1 ? `${occ.title} (${occ.slot}/${occ.times})` : occ.title} />
       <Link
         href={`/tasks/${occ.taskId}/edit`}
         aria-label={`Editar tarefa: ${occ.title}`}
         className="min-w-0 flex-1"
       >
-        <p className={cn("truncate font-bold tracking-tight", occ.done && "text-faint line-through")}>{occ.title}</p>
+        <div className="flex min-w-0 items-center gap-2">
+          <p className={cn("truncate font-bold tracking-tight", occ.done && "text-faint line-through")}>{occ.title}</p>
+          {occ.times > 1 && (
+            <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[11px] font-bold text-muted-foreground">
+              {occ.slot}/{occ.times}
+            </span>
+          )}
+        </div>
         {(showSpace || late) && (
           <div className="mt-0.5 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
             {showSpace && (

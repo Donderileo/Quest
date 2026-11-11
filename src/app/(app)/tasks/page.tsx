@@ -12,12 +12,14 @@ type Row = {
   id: string;
   task_id: string;
   due_date: string;
+  slot: number;
   status: string;
   assigned_to: string | null;
   assignee: { name: string; avatar_url: string | null } | null;
   tasks: {
     title: string;
     points: number;
+    times_per_day: number;
     spaces: { id: string; name: string; icon: string | null; mode: string };
   };
 };
@@ -35,7 +37,7 @@ export default async function TasksPage() {
     supabase
       .from("task_occurrences")
       .select(
-        "id, task_id, due_date, status, assigned_to, assignee:profiles!task_occurrences_assigned_to_fkey(name, avatar_url), tasks!inner(title, points, spaces!inner(id, name, icon, mode))",
+        "id, task_id, due_date, slot, status, assigned_to, assignee:profiles!task_occurrences_assigned_to_fkey(name, avatar_url), tasks!inner(title, points, times_per_day, spaces!inner(id, name, icon, mode))",
       )
       // próximos 7 dias (qualquer status) + pendentes que ficaram para trás (atrasadas)
       .gte("due_date", addDaysISO(today, -OVERDUE_LOOKBACK_DAYS))
@@ -62,6 +64,8 @@ export default async function TasksPage() {
     assignedTo: o.assigned_to,
     assignee: o.assignee,
     title: o.tasks.title,
+    slot: o.slot,
+    times: o.tasks.times_per_day,
     points: o.tasks.points,
     gamified: o.tasks.spaces.mode === "gamified",
     spaceId: o.tasks.spaces.id,

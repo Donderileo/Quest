@@ -17,9 +17,10 @@ type Occurrence = {
   id: string;
   task_id: string;
   due_date: string;
+  slot: number;
   status: string;
   completed_at: string | null;
-  tasks: { title: string; points: number };
+  tasks: { title: string; points: number; times_per_day: number };
   assignee: Profile;
   completer: { name: string } | null;
 };
@@ -43,16 +44,21 @@ function OccurrenceRow({ occ, gamified }: { occ: Occurrence; gamified: boolean }
 
   return (
     <div className="flex items-center gap-3 rounded-[15px] bg-card p-[14px] shadow-[0_2px_7px_-3px_rgba(40,45,40,.07)]">
-      <CheckButton occurrenceId={occ.id} done={done} title={occ.tasks.title} />
+      <CheckButton occurrenceId={occ.id} done={done} title={occ.tasks.times_per_day > 1 ? `${occ.tasks.title} (${occ.slot}/${occ.tasks.times_per_day})` : occ.tasks.title} />
 
       <Link
         href={`/tasks/${occ.task_id}/edit`}
         aria-label={`Editar tarefa: ${occ.tasks.title}`}
         className="min-w-0 flex-1"
       >
-        <p className={cn("truncate font-bold tracking-tight", done && "text-faint line-through")}>
-          {occ.tasks.title}
-        </p>
+        <div className="flex min-w-0 items-center gap-2">
+          <p className={cn("truncate font-bold tracking-tight", done && "text-faint line-through")}>{occ.tasks.title}</p>
+          {occ.tasks.times_per_day > 1 && (
+            <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[11px] font-bold text-muted-foreground">
+              {occ.slot}/{occ.tasks.times_per_day}
+            </span>
+          )}
+        </div>
         <div className="mt-0.5 text-xs font-semibold text-muted-foreground">
           {doneInfo ?? (occ.assignee ? occ.assignee.name : "Sem responsável")}
         </div>

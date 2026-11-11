@@ -3,6 +3,7 @@ import {
   assigneeForIndex,
   orderedQueue,
   rankRotationTasks,
+  rotationIndexFor,
   rotationStartOffset,
   type RotationEntry,
 } from "./rotation";
@@ -80,5 +81,36 @@ describe("escalonamento do rodízio (rankRotationTasks / rotationStartOffset)", 
 
   it("é estável: mesma entrada, mesmo resultado", () => {
     expect([...rankRotationTasks(mk(4))]).toEqual([...rankRotationTasks(mk(4))]);
+  });
+});
+
+describe("rotationIndexFor (várias vezes por dia)", () => {
+  const q = ["a", "b"];
+
+  it("1x por dia equivale ao índice simples", () => {
+    expect([0, 1, 2, 3].map((d) => assigneeForIndex(q, rotationIndexFor(0, d, 1, 1)))).toEqual(["a", "b", "a", "b"]);
+  });
+
+  it("2x por dia com 2 pessoas: cada dia tem uma vez de cada pessoa", () => {
+    for (const d of [0, 1, 2]) {
+      const day = [1, 2].map((slot) => assigneeForIndex(q, rotationIndexFor(0, d, 2, slot)));
+      expect(new Set(day).size).toBe(2);
+    }
+  });
+
+  it("2x por dia com 3 pessoas: gira sem repetir seguido e passa por todas", () => {
+    const q3 = ["a", "b", "c"];
+    const seq = [0, 1, 2].flatMap((d) => [1, 2].map((slot) => assigneeForIndex(q3, rotationIndexFor(0, d, 2, slot))));
+    expect(seq).toEqual(["a", "b", "c", "a", "b", "c"]);
+  });
+
+  it("os índices não colidem entre dias e vezes", () => {
+    const ids = new Set<number>();
+    for (const d of [0, 1, 2, 3]) for (const slot of [1, 2, 3]) ids.add(rotationIndexFor(0, d, 3, slot));
+    expect(ids.size).toBe(12);
+  });
+
+  it("considera o histórico e o escalonamento", () => {
+    expect(rotationIndexFor(10, 1, 2, 2, 3)).toBe(10 + 2 + 1 + 3);
   });
 });

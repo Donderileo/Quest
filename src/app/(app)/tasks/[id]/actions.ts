@@ -16,6 +16,7 @@ const taskSchema = z.object({
   assignmentType: z.enum(["fixed", "rotation"]),
   assigneeId: z.string().min(1).optional(),
   points: z.coerce.number().int().min(0).default(0),
+  timesPerDay: z.coerce.number().int().min(1).max(6).default(1),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
@@ -32,6 +33,7 @@ export async function updateTask(_prev: unknown, formData: FormData) {
     assignmentType: formData.get("assignmentType"),
     assigneeId: formData.get("assigneeId") || undefined,
     points: formData.get("points") || 0,
+    timesPerDay: formData.get("timesPerDay") ?? undefined,
     startDate: formData.get("startDate") || undefined,
     endDate: formData.get("endDate") || undefined,
   });
@@ -61,6 +63,7 @@ export async function updateTask(_prev: unknown, formData: FormData) {
       assignment_type: parsed.data.assignmentType,
       assignee_id: parsed.data.assignmentType === "fixed" ? parsed.data.assigneeId ?? null : null,
       points: parsed.data.points,
+      times_per_day: once ? 1 : parsed.data.timesPerDay,
       start_date: parsed.data.startDate,
       end_date: once ? parsed.data.startDate : parsed.data.endDate ?? null,
     })

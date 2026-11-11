@@ -53,3 +53,19 @@ export function rankRotationTasks(tasks: { id: string; createdAt: string }[]): M
 export function rotationStartOffset(rank: number): number {
   return Math.max(0, rank);
 }
+
+/**
+ * Índice do rodízio para a ocorrência `slot` (1-based) do dia de ordem `dayIndex` (0-based na janela),
+ * em tarefas que repetem `timesPerDay` vezes por dia. As vezes do mesmo dia são consecutivas na fila:
+ * com 2 pessoas e 2x por dia, a 1ª vez é de uma e a 2ª da outra. `before` = ocorrências antes da janela
+ * e `offset` = escalonamento da tarefa (rotationStartOffset).
+ */
+export function rotationIndexFor(
+  before: number,
+  dayIndex: number,
+  timesPerDay: number,
+  slot: number,
+  offset = 0,
+): number {
+  return before + dayIndex * timesPerDay + (slot - 1) + offset;
+}

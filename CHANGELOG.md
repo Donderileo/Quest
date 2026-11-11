@@ -12,6 +12,14 @@ mudança de comportamento; **PATCH** = correção. A versão fica em `package.js
 4. Commits só de documentação não sobem a versão.
 5. Se houver migration nova, `npx supabase db push` **antes** do deploy.
 
+## 0.7.0 — Várias vezes por dia (2026-11-10)
+- **Vezes por dia** no formulário de tarefa (1 a 6): ex. **dar comida ao cachorro 2x, todos os dias**. Cada vez do dia vira uma
+  tarefa própria para marcar, identificada como **1/2**, **2/2**, em Tarefas, nas abas Hoje/Semana do ambiente e no aviso de
+  conclusão. Cada vez é concluída (e desfeita) separadamente e vale os pontos da tarefa. A aba Tudo mostra "Todo dia · 2x por dia".
+- Em **rodízio**, as vezes do mesmo dia passam para pessoas diferentes (com 2 pessoas, uma faz a 1ª e a outra a 2ª).
+- Mudar de 2x para 3x acrescenta a nova vez de hoje em diante e **preserva** a que já foi concluída.
+- Banco: migration 14 (`tasks.times_per_day`, `task_occurrences.slot`; a unicidade passa a ser tarefa + dia + vez).
+
 ## 0.6.0 — Tarefa avulsa (2026-11-10)
 - **Tarefa avulsa ("Uma vez"):** algo que surgiu e não estava previsto, no dia, sem repetição. Botão **Nova tarefa** na tela
   de Tarefas: pergunta o ambiente (se houver mais de um), abre já em "Uma vez" para **Hoje** (ou **Outro dia**) e com você como

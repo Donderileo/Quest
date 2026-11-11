@@ -12,7 +12,7 @@ export default async function EditTaskPage({
 
   const { data: task } = await supabase
     .from("tasks")
-    .select("id, space_id, title, recurrence_type, recurrence_days, recurrence_interval_days, assignment_type, assignee_id, points, start_date, end_date, spaces(mode, home_id)")
+    .select("id, space_id, title, recurrence_type, recurrence_days, recurrence_interval_days, assignment_type, assignee_id, points, times_per_day, start_date, end_date, spaces(mode, home_id)")
     .eq("id", id)
     .single();
 
@@ -59,6 +59,7 @@ export default async function EditTaskPage({
         assigneeId: task.assignee_id,
         rotationOrder: rotation?.map((r) => r.user_id) ?? [],
         points: task.points,
+        timesPerDay: task.times_per_day,
         startDate: task.start_date,
         endDate: task.end_date,
       }}

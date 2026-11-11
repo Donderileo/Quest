@@ -22,6 +22,7 @@ export type TaskFormInitial = {
   points: number;
   startDate?: string;
   endDate?: string | null;
+  timesPerDay?: number;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -54,6 +55,7 @@ export function TaskForm({
   const [assigneeId, setAssigneeId] = useState<string | null>(initial.assigneeId ?? members[0]?.id ?? null);
   const [rotationOrder, setRotationOrder] = useState<string[]>(initial.rotationOrder);
   const [points, setPoints] = useState(initial.points);
+  const [times, setTimes] = useState(initial.timesPerDay ?? 1);
 
   function toggleDay(d: number) {
     setSelectedDays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
@@ -105,6 +107,7 @@ export function TaskForm({
         <input type="hidden" name="recurrenceType" value={recurrence} />
         <input type="hidden" name="assignmentType" value={assignment} />
         <input type="hidden" name="points" value={points} />
+        <input type="hidden" name="timesPerDay" value={recurrence === "once" ? 1 : times} />
         {recurrence === "weekly" &&
           selectedDays.map((d) => <input key={d} type="hidden" name="recurrenceDays" value={d} />)}
         {recurrence === "custom" && <input type="hidden" name="recurrenceIntervalDays" value={interval} />}
@@ -187,6 +190,45 @@ export function TaskForm({
             )}
           </div>
         </div>
+
+        {/* vezes por dia: ex. comida do cachorro 2x */}
+        {recurrence !== "once" && (
+          <div>
+            <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-subtle">Vezes por dia</div>
+            <div className="rounded-[15px] bg-card p-3.5 shadow-[0_2px_7px_-3px_rgba(40,45,40,.07)]">
+              <div className="flex items-center justify-between">
+                <span className="text-[15px] font-bold">{times === 1 ? "1 vez" : `${times} vezes`} por dia</span>
+                <div className="flex items-center gap-3.5">
+                  <button
+                    type="button"
+                    aria-label="Menos uma vez por dia"
+                    onClick={() => setTimes((t) => Math.max(1, t - 1))}
+                    disabled={times <= 1}
+                    className="press flex size-8 items-center justify-center rounded-[10px] bg-track text-lg font-bold text-muted-foreground disabled:opacity-40"
+                  >
+                    −
+                  </button>
+                  <span className="min-w-[28px] text-center text-lg font-extrabold">{times}</span>
+                  <button
+                    type="button"
+                    aria-label="Mais uma vez por dia"
+                    onClick={() => setTimes((t) => Math.min(6, t + 1))}
+                    disabled={times >= 6}
+                    className="press flex size-8 items-center justify-center rounded-[10px] bg-primary text-lg font-bold text-white disabled:opacity-40"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              {times > 1 && (
+                <p className="mx-0.5 mt-2.5 text-[12.5px] font-medium text-muted-foreground">
+                  Cada vez aparece como uma tarefa separada no dia ({Array.from({ length: times }, (_, i) => `${i + 1}ª`).join(", ")}).
+                  {assignment === "rotation" && " No rodízio, as vezes do dia passam para pessoas diferentes."}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* quando começa e termina */}
         <TaskSchedule

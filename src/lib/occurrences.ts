@@ -1,6 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { dueDatesInRange } from "@/lib/recurrence";
-import { assigneeForIndex, orderedQueue, rankRotationTasks, rotationStartOffset } from "@/lib/rotation";
+import { assigneeForIndex, orderedQueue, rankRotationTasks, rotationIndexFor, rotationStartOffset } from "@/lib/rotation";
 import { addDaysISO, todayISO } from "@/lib/tz";
 
 type TaskRow = {
@@ -12,12 +12,13 @@ type TaskRow = {
   assignee_id: string | null;
   start_date: string;
   end_date: string | null;
+  times_per_day: number;
   created_at: string;
   spaces: { home_id: string };
 };
 
 const TASK_COLS =
-  "id, recurrence_type, recurrence_days, recurrence_interval_days, assignment_type, assignee_id, start_date, end_date, created_at, spaces!inner(home_id)";
+  "id, recurrence_type, recurrence_days, recurrence_interval_days, assignment_type, assignee_id, start_date, end_date, times_per_day, created_at, spaces!inner(home_id)";
 
 const CHUNK = 10;
 
@@ -107,16 +108,25 @@ export async function generateOccurrences(
       before = count ?? 0;
     }
 
-    const rows = dues.map((due, i) => ({
-      task_id: task.id,
-      due_date: due,
-      assigned_to: task.assignment_type === "fixed" ? task.assignee_id : assigneeForIndex(queue, before + i + rotationStartOffset(ranks.get(task.id) ?? 0)),
-      status: "pending" as const,
-    }));
+    // uma ocorrência por dia × vezes por dia (cada vez do dia é uma ocorrência própria: "slot")
+    const times = Math.max(1, task.times_per_day ?? 1);
+    const offset = rotationStartOffset(ranks.get(task.id) ?? 0);
+    const rows = dues.flatMap((due, i) =>
+      Array.from({ length: times }, (_, k) => ({
+        task_id: task.id,
+        due_date: due,
+        slot: k + 1,
+        assigned_to:
+          task.assignment_type === "fixed"
+            ? task.assignee_id
+            : assigneeForIndex(queue, rotationIndexFor(before, i, times, k + 1, offset)),
+        status: "pending" as const,
+      })),
+    );
 
     const { error: upsertError } = await supabase
       .from("task_occurrences")
-      .upsert(rows, { onConflict: "task_id,due_date", ignoreDuplicates: true });
+      .upsert(rows, { onConflict: "task_id,due_date,slot", ignoreDuplicates: true });
     if (upsertError) throw new Error(upsertError.message);
     created += rows.length;
   }

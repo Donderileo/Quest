@@ -267,6 +267,7 @@ export type Database = {
           due_date: string
           id: string
           points_awarded: number
+          slot: number
           status: Database["public"]["Enums"]["occurrence_status"]
           task_id: string
         }
@@ -277,6 +278,7 @@ export type Database = {
           due_date: string
           id?: string
           points_awarded?: number
+          slot?: number
           status?: Database["public"]["Enums"]["occurrence_status"]
           task_id: string
         }
@@ -287,6 +289,7 @@ export type Database = {
           due_date?: string
           id?: string
           points_awarded?: number
+          slot?: number
           status?: Database["public"]["Enums"]["occurrence_status"]
           task_id?: string
         }
@@ -363,6 +366,7 @@ export type Database = {
           recurrence_type: Database["public"]["Enums"]["recurrence_type"]
           space_id: string
           start_date: string
+          times_per_day: number
           title: string
         }
         Insert: {
@@ -380,6 +384,7 @@ export type Database = {
           recurrence_type: Database["public"]["Enums"]["recurrence_type"]
           space_id: string
           start_date?: string
+          times_per_day?: number
           title: string
         }
         Update: {
@@ -397,6 +402,7 @@ export type Database = {
           recurrence_type?: Database["public"]["Enums"]["recurrence_type"]
           space_id?: string
           start_date?: string
+          times_per_day?: number
           title?: string
         }
         Relationships: [

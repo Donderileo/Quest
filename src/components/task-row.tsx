@@ -16,6 +16,7 @@ export type TaskTemplate = {
   assignment_type: string;
   assignee_id: string | null;
   points: number;
+  times_per_day?: number;
   start_date?: string;
   end_date?: string | null;
   assignee: { name: string } | null;
@@ -23,6 +24,12 @@ export type TaskTemplate = {
 };
 
 function recurrenceLabel(task: TaskTemplate): string {
+  const base = baseLabel(task);
+  const n = task.times_per_day ?? 1;
+  return n > 1 ? `${base} · ${n}x por dia` : base;
+}
+
+function baseLabel(task: TaskTemplate): string {
   if (task.recurrence_type === "once") return "Uma vez";
   if (task.recurrence_type === "daily") return "Todo dia";
   if (task.recurrence_type === "weekly") {

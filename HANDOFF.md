@@ -115,6 +115,11 @@ Data de referência: outubro/2026. Autor do produto: Leo (donderileo@gmail.com).
 - **`balance-data.ts`** (puro, usado no cliente para a prévia e no servidor para recalcular) e **`balance-load.ts`** (leitura sob RLS). A action `balanceTasks` recalcula no servidor e grava via **`apply_balance`** (SECURITY DEFINER, tudo-ou-nada: casa/pendente/futuro/rodízio/pessoa na fila). O Desfazer usa a mesma função com os responsáveis anteriores.
 - Pontos pesam só em ambiente gamificado (senão 0). Aviso na Casa só quando o botão consegue reduzir uma diferença ≥ 2.
 
+### 2.4h Tarefa avulsa, atrasadas e várias vezes por dia (migrations 13 e 14)
+- **Avulsa:** `recurrence_type='once'` (`isDueOn`: só no `start_date`); o servidor grava `end_date = start_date`. Atalho "Nova tarefa" em `/tasks` (`/tasks/new?once=1`, pergunta o ambiente se houver mais de um; responsável padrão = quem cria; volta para `/tasks`). Some da aba Tudo depois que passa.
+- **Ignorar atrasadas:** `skipOverdue`/`restoreSkipped` (`tasks/actions.ts`) trocam `pending↔skipped` sob RLS, no escopo da tela (Minhas/Da casa), incluindo as >30 dias que a lista não mostra. Sem migration (o status `skipped` já existia).
+- **Vezes por dia:** `tasks.times_per_day` (1–6) e `task_occurrences.slot`; unicidade `(task_id, due_date, slot)`. `generateOccurrences` cria `dias × vezes`; rodízio usa `rotationIndexFor(before, dia, vezes, slot, offset)` (as vezes do dia são consecutivas na fila). Editar a quantidade regenera só pendentes futuras e preserva as concluídas.
+
 ### 2.5 Realtime via router.refresh()
 - **Decisão:** componente client `RealtimeRefresh` assina `postgres_changes` nas tabelas (`task_occurrences`, `space_member_points`, `tasks`) e chama `router.refresh()` ao receber evento.
 - **Por quê:** o refetch acontece no **servidor**, sob RLS — o navegador só é avisado "algo mudou". Sem vazamento; pior caso é um refresh desnecessário.
